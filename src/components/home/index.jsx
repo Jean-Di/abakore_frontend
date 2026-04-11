@@ -1,18 +1,42 @@
 // HowItWorks.jsx
 'use client'
 import Link from 'next/link'
+import clsx from 'clsx'
+import {
+  ArrowRight,
+  BarChart3,
+  Building2,
+  Check,
+  CheckCircle2,
+  Cpu,
+  MessageCircle,
+  Scale,
+  ShieldCheck,
+  Sparkles,
+  Star,
+} from 'lucide-react'
 
 export function HowItWorks() {
   const steps = [
     {
       n: '1',
       title: 'Créez votre profil',
-      body: 'Inscrivez-vous, choisissez votre statut (avocat, comptable, entreprise…) et soumettez vos justificatifs pour obtenir le badge ✓ vérifié.',
+      body: 'Inscrivez-vous, choisissez votre statut (avocat, comptable, entreprise…) et soumettez vos justificatifs pour obtenir le badge vérifié.',
       extra: (
-        <div className="flex flex-wrap gap-1.5 mt-4">
-          {['⚖ Avocat', '📊 Comptable', '🏢 Entreprise'].map(t => (
-            <span key={t} className="badge-navy text-[11px]">{t}</span>
-          ))}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {[
+            { icon: Scale, label: 'Avocat' },
+            { icon: BarChart3, label: 'Comptable' },
+            { icon: Building2, label: 'Entreprise' },
+          ].map((badge) => {
+            const Icon = badge.icon
+            return (
+              <span key={badge.label} className="badge-navy inline-flex items-center gap-1.5 text-[11px]">
+                <Icon size={12} />
+                {badge.label}
+              </span>
+            )
+          })}
         </div>
       ),
     },
@@ -21,8 +45,9 @@ export function HowItWorks() {
       title: 'Trouvez & contactez',
       body: 'Recherchez parmi 2 400+ experts certifiés. Consultez profils, notes et tarifs. Lancez une conversation directement sur la plateforme.',
       extra: (
-        <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl px-3 py-2 text-xs text-gold-700">
-          💬 Messagerie sécurisée + partage de documents intégré
+        <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl px-3 py-2 text-xs text-gold-700 inline-flex items-center gap-2">
+          <MessageCircle size={14} />
+          Messagerie sécurisée + partage de documents intégré
         </div>
       ),
     },
@@ -32,8 +57,14 @@ export function HowItWorks() {
       body: 'Soumettez votre dossier, suivez l\'avancement en temps réel, validez les livrables et effectuez le paiement sécurisé — sans sortir d\'Abakoré.',
       extra: (
         <div className="flex gap-2 mt-4 flex-wrap">
-          <span className="badge-navy">🔒 Paiement sécurisé</span>
-          <span className="badge-verified">✓ Fonds protégés</span>
+          <span className="badge-navy inline-flex items-center gap-2 text-[11px]">
+            <ShieldCheck size={14} className="text-gold-400" />
+            Paiement sécurisé
+          </span>
+          <span className="badge-verified inline-flex items-center gap-2 text-[11px]">
+            <Check size={14} />
+            Fonds protégés
+          </span>
         </div>
       ),
     },
@@ -82,7 +113,10 @@ export function FeaturedExperts() {
             <p className="sec-label">Experts à la une</p>
             <h2 className="sec-title mb-0">Profils vérifiés & recommandés</h2>
           </div>
-          <Link href="/search" className="btn-outline">Voir tous les experts →</Link>
+          <Link href="/search" className="btn-outline inline-flex items-center gap-2">
+            Voir tous les experts
+            <ArrowRight size={16} />
+          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {EXPERTS.map(e => (
@@ -121,10 +155,26 @@ export function FeaturedExperts() {
 // FeaturesSection.jsx
 export function FeaturesSection() {
   const features = [
-    { icon: '⚖', title: 'Base OHADA intégrée & IA', body: 'Posez vos questions juridiques en langage naturel. L\'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources.' },
-    { icon: '🔒', title: 'Paiement & escrow sécurisés', body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
-    { icon: '✓',  title: 'Vérification des profils',    body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
-    { icon: '📊', title: 'Suivi de dossiers en temps réel', body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
+    {
+      icon: Cpu,
+      title: 'Base OHADA intégrée & IA',
+      body: 'Posez vos questions juridiques en langage naturel. L\'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources.',
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Paiement & escrow sécurisés',
+      body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.',
+    },
+    {
+      icon: CheckCircle2,
+      title: 'Vérification des profils',
+      body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.',
+    },
+    {
+      icon: BarChart3,
+      title: 'Suivi de dossiers en temps réel',
+      body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.',
+    },
   ]
 
   return (
@@ -136,17 +186,20 @@ export function FeaturesSection() {
             <p className="sec-label">Fonctionnalités</p>
             <h2 className="sec-title">Tout ce qu'il faut,<br />nulle part ailleurs</h2>
             <div className="flex flex-col gap-5 mt-10">
-              {features.map((f, i) => (
-                <div key={i} className="flex gap-4 p-5 rounded-2xl border-[1.5px] border-transparent hover:bg-white hover:border-gold-300 hover:shadow-sm transition-all cursor-default group">
-                  <div className="w-11 h-11 flex-shrink-0 rounded-xl bg-gold-50 border border-gold-200 flex items-center justify-center text-xl group-hover:bg-gold-100 transition-colors">
-                    {f.icon}
+              {features.map((f, i) => {
+                const Icon = f.icon
+                return (
+                  <div key={i} className="flex gap-4 p-5 rounded-2xl border-[1.5px] border-transparent hover:bg-white hover:border-gold-300 hover:shadow-sm transition-all cursor-default group">
+                    <div className="w-11 h-11 flex-shrink-0 rounded-xl bg-gold-50 border border-gold-200 flex items-center justify-center text-xl group-hover:bg-gold-100 transition-colors">
+                      <Icon size={20} className="text-navy-900" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-[15px] font-semibold text-navy-800 mb-1">{f.title}</h3>
+                      <p className="text-[13px] text-gray-500 leading-relaxed">{f.body}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-display text-[15px] font-semibold text-navy-800 mb-1">{f.title}</h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed">{f.body}</p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -154,7 +207,10 @@ export function FeaturesSection() {
           <div className="bg-navy-900 rounded-3xl p-7 border border-gold-500/15 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/8 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10">
-              <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gold-500/60 mb-5">✦ OHADA Intelligence</p>
+              <p className="flex items-center justify-center gap-2 text-[11px] font-bold tracking-[0.1em] uppercase text-gold-500/60 mb-5">
+                <Sparkles size={14} />
+                OHADA Intelligence
+              </p>
               <div className="bg-white/[0.06] border border-white/10 rounded-xl p-4 mb-3">
                 <p className="text-xs text-white/40 mb-2">Question IA</p>
                 <p className="text-[13px] text-white/85 leading-relaxed">"Quelles sont les conditions de validité d'un contrat de bail commercial sous l'Acte Uniforme OHADA ?"</p>
@@ -182,7 +238,6 @@ export function FeaturesSection() {
 
 // PricingSection.jsx
 import { PRICING_PLANS } from '@/lib/data'
-import clsx from 'clsx'
 
 export function PricingSection() {
   return (
@@ -211,8 +266,9 @@ export function PricingSection() {
               }}
             >
               {plan.featured && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-900 text-[11px] font-bold px-4 py-1 rounded-full whitespace-nowrap">
-                  ⭐ Populaire
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold-500 to-gold-600 text-white text-[11px] font-bold px-4 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1">
+                  <Star size={14} />
+                  Populaire
                 </span>
               )}
               <p className={clsx('text-[11px] font-bold tracking-widest uppercase mb-2.5', plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-300/70' : 'text-gray-300')}>
@@ -227,8 +283,8 @@ export function PricingSection() {
               <ul className="space-y-0.5 mb-6">
                 {plan.features.map(({ ok, text }) => (
                   <li key={text} className={clsx('flex items-start gap-2 py-1.5 text-[13px] border-b last:border-0', plan.featured ? 'border-white/[0.07] text-white/70' : plan.spotlight ? 'border-purple-500/15 text-purple-200/75' : 'border-gray-50 text-gray-500')}>
-                    <span className={ok ? (plan.spotlight ? 'text-purple-400' : 'text-gold-500') : 'text-gray-200'} style={{ fontWeight: 700 }}>
-                      {ok ? (plan.spotlight ? '★' : '✦') : '–'}
+                    <span className="flex items-center justify-center w-5 text-lg">
+                      {ok ? <Check size={14} className={plan.featured || plan.spotlight ? 'text-white' : 'text-gold-500'} /> : <span className="text-gray-300">–</span>}
                     </span>
                     {text}
                   </li>
@@ -272,7 +328,7 @@ export function CtaSection() {
               PME à la recherche d'expertise ou professionnel cherchant à développer sa clientèle — Abakoré vous connecte.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/auth/register" className="btn-gold-lg">✦ Créer mon profil gratuitement</Link>
+              <Link href="/auth/register" className="btn-gold-lg">Créer mon profil gratuitement</Link>
               <Link href="/search" className="btn-outline-gold btn-lg">Parcourir les experts</Link>
             </div>
           </div>

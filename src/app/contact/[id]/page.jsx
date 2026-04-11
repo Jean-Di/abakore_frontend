@@ -6,8 +6,21 @@ import { SubBadge, Stars, Toast } from '@/components/ui'
 import { EXPERTS } from '@/lib/data'
 import clsx from 'clsx'
 import {
-  MessageSquare, FileText, DollarSign, HelpCircle, Users,
-  Lock, Info, Clock, CheckCircle2, Briefcase, MapPin, AlertTriangle, Check,
+  ArrowLeft,
+  ArrowRight,
+  MessageSquare,
+  FileText,
+  DollarSign,
+  HelpCircle,
+  Users,
+  Lock,
+  Info,
+  Clock,
+  CheckCircle2,
+  Briefcase,
+  MapPin,
+  AlertTriangle,
+  Check,
 } from 'lucide-react'
 
 const SUBJECTS = [
@@ -60,8 +73,8 @@ export default function ContactPage({ params }) {
               <Link href="/messages" className="btn-gold w-full justify-center py-3 rounded-xl inline-flex items-center gap-1.5">
                 <MessageSquare size={15} /> Aller à la messagerie
               </Link>
-              <Link href={`/profile/${expert.id}`} className="btn-outline w-full justify-center py-3 rounded-xl">
-                ← Retour au profil
+              <Link href={`/profile/${expert.id}`} className="btn-outline w-full justify-center py-3 rounded-xl inline-flex items-center gap-1.5">
+                <ArrowLeft size={14} /> Retour au profil
               </Link>
             </div>
           </div>
@@ -219,9 +232,11 @@ export default function ContactPage({ params }) {
 
                   <button
                     onClick={() => setStep(2)}
-                    className="btn-gold w-full justify-center py-3.5 text-base rounded-xl"
+                    className="btn-gold w-full justify-center py-3.5 text-base rounded-xl inline-flex items-center gap-2"
                   >
-                    Continuer → Vérifier avant envoi
+                    Continuer
+                    <ArrowRight size={16} />
+                    Vérifier avant envoi
                   </button>
                 </div>
               )}
@@ -251,7 +266,7 @@ export default function ContactPage({ params }) {
                   </Toast>
 
                   <div className="flex gap-3 mt-5">
-                    <button className="btn-outline flex-shrink-0" onClick={() => setStep(1)}>← Modifier</button>
+                    <button className="btn-outline flex-shrink-0 inline-flex items-center gap-1.5" onClick={() => setStep(1)}><ArrowLeft size={14} /> Modifier</button>
                     <button className="btn-gold flex-1 justify-center py-3.5 rounded-xl inline-flex items-center gap-1.5" onClick={handleSend}>
                       <Check size={15} /> Envoyer le message
                     </button>

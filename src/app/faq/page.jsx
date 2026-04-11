@@ -7,7 +7,7 @@ const FAQS = [
   {
     category: 'Compte & inscription',
     items: [
-      { q: 'Comment créer un compte expert ?', a: 'Rendez-vous sur la page d'inscription, choisissez votre statut professionnel, puis déposez vos justificatifs. Votre profil sera validé sous 24 à 72h ouvrées.' },
+      { q: 'Comment créer un compte expert ?', a: 'Rendez-vous sur la page d\'inscription, choisissez votre statut professionnel, puis déposez vos justificatifs. Votre profil sera validé sous 24 à 72h ouvrées.' },
       { q: 'Quels documents sont requis pour la vérification ?', a: 'Selon votre statut : carte professionnelle du barreau, diplôme, attestation d\'exercice ou pièce d\'identité nationale. Tous les fichiers doivent être au format PDF, JPG ou PNG (max 10 Mo).' },
       { q: 'Puis-je modifier mon profil après validation ?', a: 'Oui, vous pouvez mettre à jour vos informations à tout moment. Toute modification des justificatifs entraîne une nouvelle vérification.' },
     ],

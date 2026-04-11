@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import StaticPage from '@/components/layout/StaticPage'
 
 const POSTS = [
@@ -20,8 +21,9 @@ export default function BlogPage() {
             <p className="text-xs text-gray-400 uppercase tracking-[0.18em] mb-3">{post.date}</p>
             <h2 className="font-display text-lg font-semibold text-navy-900 mb-3">{post.title}</h2>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">{post.excerpt}</p>
-            <Link href={post.href} className="text-gold-600 font-semibold text-sm">
-              Lire l’article →
+            <Link href={post.href} className="text-gold-600 font-semibold text-sm inline-flex items-center gap-2">
+              Lire l’article
+              <ArrowRight size={14} />
             </Link>
           </article>
         ))}

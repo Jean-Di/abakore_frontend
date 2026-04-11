@@ -1,11 +1,11 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { Scale, Calculator, ClipboardList, Landmark, FileText, Building2, Search, Sparkles } from 'lucide-react'
+import { BarChart3, Briefcase, Building2, ChevronDown, DollarSign, FileText, Search, ShieldCheck, Scale } from 'lucide-react'
 import { DOMAINS } from '@/lib/data'
 import clsx from 'clsx'
 
-const DOMAIN_ICONS = [Scale, Calculator, ClipboardList, Landmark, FileText, Building2]
+const DOMAIN_ICONS = [Scale, DollarSign, Briefcase, ShieldCheck, FileText, Building2]
 
 export default function HeroSection() {
   const [activeChip, setActiveChip] = useState(0)
@@ -17,8 +17,9 @@ export default function HeroSection() {
         background: 'radial-gradient(ellipse 70% 90% at 20% 60%, rgba(37,74,122,0.55) 0%, transparent 65%), radial-gradient(ellipse 50% 70% at 85% 20%, rgba(201,168,76,0.08) 0%, transparent 60%)'
       }} />
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 pt-24 pb-16">
-        <div className="hero-badge mb-7 w-fit">
-          <span className="blink">●</span> IA Juridique · Droit OHADA / UEMOA
+        <div className="hero-badge mb-7 w-fit inline-flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-gold-400 inline-block animate-pulse" />
+          IA Juridique · Droit OHADA / UEMOA
         </div>
         <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.08] max-w-3xl mb-5">
           L&apos;expertise juridique{' '}<span className="text-gold-500">OHADA accessible</span>{' '}à toutes les entreprises
@@ -28,21 +29,32 @@ export default function HeroSection() {
         </p>
         <div className="flex flex-wrap items-center gap-4 mb-10">
           <Link href="/auth/register" className="btn-gold-lg inline-flex items-center gap-2">
-            <Sparkles size={16} /> Démarrer gratuitement
+            Démarrer gratuitement
           </Link>
-          <Link href="/search" className="btn-outline-gold btn-lg">Parcourir les experts →</Link>
+          <Link href="/search" className="btn-outline-gold btn-lg inline-flex items-center gap-2">
+            Parcourir les experts
+            <ChevronDown size={16} />
+          </Link>
         </div>
         <div className="flex items-center bg-white/[0.06] backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden max-w-2xl mb-5 shadow-lg">
           <div className="flex-1 flex items-center gap-3 px-5 py-3.5">
             <Search size={18} className="text-white/40 flex-shrink-0" />
-            <input type="text" placeholder="Rechercher un expert OHADA, un acte, un contrat…"
-              className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder:text-white/30 font-body" />
+            <input
+              type="text"
+              placeholder="Rechercher un expert OHADA, un acte, un contrat…"
+              className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder:text-white/30 font-body"
+            />
           </div>
           <div className="w-px h-8 bg-white/10 flex-shrink-0" />
           <div className="flex items-center gap-2 px-4 text-[13px] text-white/50 cursor-pointer whitespace-nowrap">
-            <Scale size={14} /> Tous domaines <span className="text-[10px] opacity-60">▼</span>
+            <Scale size={14} className="text-white/70" />
+            Tous domaines
+            <ChevronDown size={12} className="text-white/50" />
           </div>
-          <Link href="/search" className="m-1.5 px-5 py-2 bg-gradient-to-br from-gold-500 to-gold-600 text-navy-900 font-bold text-sm rounded-xl whitespace-nowrap hover:brightness-105 transition-all">
+          <Link
+            href="/search"
+            className="m-1.5 px-5 py-2 bg-gradient-to-br from-gold-500 to-gold-600 text-navy-900 font-bold text-sm rounded-xl whitespace-nowrap hover:brightness-105 transition-all"
+          >
             Rechercher
           </Link>
         </div>
@@ -53,9 +65,9 @@ export default function HeroSection() {
               <button
                 key={d.label}
                 onClick={() => setActiveChip(i)}
-                className={clsx(i === activeChip ? 'chip-active' : 'chip', 'inline-flex items-center gap-1.5')}
+                className={clsx(i === activeChip ? 'chip-active' : 'chip', 'inline-flex items-center gap-2')}
               >
-                {Icon && <Icon size={12} />}
+                {Icon && <Icon size={14} className="text-white/70" />}
                 {d.label}
               </button>
             )
@@ -64,8 +76,8 @@ export default function HeroSection() {
         <div className="flex flex-wrap gap-10">
           {[
             { val: '2 400+', label: 'Experts certifiés' },
-            { val: '17',     label: 'Pays OHADA couverts' },
-            { val: '98%',    label: 'Satisfaction client' },
+            { val: '17', label: 'Pays OHADA couverts' },
+            { val: '98%', label: 'Satisfaction client' },
             { val: '8 500+', label: 'Dossiers traités' },
           ].map(({ val, label }, i) => (
             <div key={label} className="flex items-center gap-10">

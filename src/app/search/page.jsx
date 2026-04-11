@@ -6,8 +6,15 @@ import { EXPERTS } from '@/lib/data'
 import Link from 'next/link'
 import clsx from 'clsx'
 import {
-  Scale, Calculator, Search, Briefcase, GraduationCap,
-  MapPin, SlidersHorizontal, ChevronDown,
+  Check,
+  Scale,
+  Calculator,
+  Search,
+  Briefcase,
+  GraduationCap,
+  MapPin,
+  SlidersHorizontal,
+  ChevronDown,
 } from 'lucide-react'
 
 const DOMAINS_FILTER = ['Droit des sociétés','Droit commercial OHADA','SYSCOHADA / Comptabilité','Droit du travail','Arbitrage CCJA','Droit bancaire']
@@ -211,7 +218,9 @@ export default function SearchPage() {
                         {e.initials}
                       </div>
                       {e.verified && (
-                        <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
+                        <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-white">
+                          <Check size={10} />
+                        </span>
                       )}
                     </div>
 

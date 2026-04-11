@@ -117,7 +117,7 @@ export default function DashboardPage() {
         {/* Main content */}
         <main className="flex-1 md:ml-[240px] p-6 md:p-8">
           {/* Greeting */}
-          <h1 className="font-display text-2xl font-bold text-navy-900">Bonjour, Kofi 👋</h1>
+          <h1 className="font-display text-2xl font-bold text-navy-900">Bonjour, Kofi</h1>
           <p className="text-sm text-gray-400 mb-6 mt-1">{capitalize(today)} · 3 dossiers actifs</p>
 
           {/* KPIs */}

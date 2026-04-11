@@ -6,9 +6,27 @@ import { SubBadge, Stars, Toast, ProgressBar } from '@/components/ui'
 import { EXPERTS } from '@/lib/data'
 import clsx from 'clsx'
 import {
-  FileText, Building2, Scale, CheckCircle2, Rocket, Briefcase,
-  Landmark, Search, Clock, MapPin, DollarSign, AlertTriangle,
-  Lock, PartyPopper, BarChart2, MessageSquare, Sparkles, Star, Check,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  Building2,
+  Scale,
+  CheckCircle2,
+  Rocket,
+  Briefcase,
+  Landmark,
+  Search,
+  Clock,
+  MapPin,
+  DollarSign,
+  AlertTriangle,
+  Lock,
+  PartyPopper,
+  BarChart2,
+  MessageSquare,
+  Sparkles,
+  Star,
+  Check,
 } from 'lucide-react'
 
 const DOSSIER_TYPES = [
@@ -85,8 +103,8 @@ export default function ProposePage({ params }) {
                 </Link>
               </div>
             </div>
-            <Link href="/search" className="block text-center text-sm text-gray-400 hover:text-gold-600 transition-colors">
-              ← Retour à la recherche
+            <Link href="/search" className="block text-center text-sm text-gray-400 hover:text-gold-600 transition-colors inline-flex items-center justify-center gap-1.5">
+              <ArrowLeft size={13} /> Retour à la recherche
             </Link>
           </div>
         </div>
@@ -160,9 +178,10 @@ export default function ProposePage({ params }) {
                   <div className="flex justify-end">
                     <button
                       onClick={() => dossierType && setStep(2)}
-                      className={clsx('btn-gold px-8 py-3 rounded-xl', !dossierType && 'opacity-50 cursor-not-allowed')}
+                      className={clsx('btn-gold px-8 py-3 rounded-xl inline-flex items-center gap-2', !dossierType && 'opacity-50 cursor-not-allowed')}
                     >
-                      Continuer →
+                      Continuer
+                      <ArrowRight size={16} />
                     </button>
                   </div>
                 </div>
@@ -221,8 +240,13 @@ export default function ProposePage({ params }) {
                     </div>
                   </div>
                   <div className="flex justify-between">
-                    <button className="btn-outline" onClick={() => setStep(1)}>← Retour</button>
-                    <button className="btn-gold px-8 py-3 rounded-xl" onClick={() => setStep(3)}>Continuer →</button>
+                    <button className="btn-outline inline-flex items-center gap-2" onClick={() => setStep(1)}>
+                      <ArrowLeft size={16} /> Retour
+                    </button>
+                    <button className="btn-gold px-8 py-3 rounded-xl inline-flex items-center gap-2" onClick={() => setStep(3)}>
+                      Continuer
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
                 </div>
               )}
@@ -315,8 +339,13 @@ export default function ProposePage({ params }) {
                   </div>
 
                   <div className="flex justify-between">
-                    <button className="btn-outline" onClick={() => setStep(2)}>← Retour</button>
-                    <button className="btn-gold px-8 py-3 rounded-xl" onClick={() => setStep(4)}>Vérifier le récapitulatif →</button>
+                    <button className="btn-outline inline-flex items-center gap-2" onClick={() => setStep(2)}>
+                      <ArrowLeft size={16} /> Retour
+                    </button>
+                    <button className="btn-gold px-8 py-3 rounded-xl inline-flex items-center gap-2" onClick={() => setStep(4)}>
+                      Vérifier le récapitulatif
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
                 </div>
               )}
@@ -369,7 +398,9 @@ export default function ProposePage({ params }) {
                   </Toast>
 
                   <div className="flex justify-between mt-5">
-                    <button className="btn-outline" onClick={() => setStep(3)}>← Modifier</button>
+                    <button className="btn-outline inline-flex items-center gap-2" onClick={() => setStep(3)}>
+                      <ArrowLeft size={16} /> Modifier
+                    </button>
                     <button className="btn-gold px-10 py-3.5 rounded-xl text-base inline-flex items-center gap-1.5" onClick={handleSubmit}>
                       <Sparkles size={15} /> Soumettre le dossier
                     </button>
