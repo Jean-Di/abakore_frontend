@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Twitter, Linkedin, Facebook } from 'lucide-react'
 
 const LINKS = {
   Plateforme: [
@@ -24,6 +25,12 @@ const LINKS = {
   ],
 }
 
+const SOCIAL = [
+  { Icon: Twitter,  label: 'Twitter' },
+  { Icon: Linkedin, label: 'LinkedIn' },
+  { Icon: Facebook, label: 'Facebook' },
+]
+
 export default function Footer() {
   return (
     <footer className="bg-[#0A1628] border-t border-gold-500/10 pt-16 pb-8">
@@ -36,9 +43,13 @@ export default function Footer() {
               La plateforme de référence pour l'expertise juridique, comptable et RH dans l'espace OHADA.
             </p>
             <div className="flex gap-2 mt-5">
-              {['𝕏', 'in', 'f'].map((icon) => (
-                <button key={icon} className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-gold-400 hover:bg-white/10 transition-all text-sm font-bold">
-                  {icon}
+              {SOCIAL.map(({ Icon, label }) => (
+                <button
+                  key={label}
+                  aria-label={label}
+                  className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white/50 hover:text-gold-400 hover:bg-white/10 transition-all"
+                >
+                  <Icon size={14} />
                 </button>
               ))}
             </div>
@@ -60,7 +71,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/[0.07] pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <span className="text-xs text-white/25">© 2024 Abakoré. Tous droits réservés.</span>
+          <span className="text-xs text-white/25">© 2025 Abakoré. Tous droits réservés.</span>
           <span className="text-xs text-white/25">Droit OHADA · 17 pays · 240M d'habitants</span>
         </div>
       </div>

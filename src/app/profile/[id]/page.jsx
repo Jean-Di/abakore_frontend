@@ -1,7 +1,8 @@
 import Navbar from '@/components/layout/Navbar'
-import { Avatar, Badge, SubBadge, Stars, StatusBadge, ProgressBar } from '@/components/ui'
+import { Avatar, Badge, SubBadge, Stars, StatusBadge } from '@/components/ui'
 import { EXPERTS } from '@/lib/data'
 import Link from 'next/link'
+import { MapPin, Briefcase, Check } from 'lucide-react'
 
 export async function generateStaticParams() {
   return EXPERTS.map(e => ({ id: e.id }))
@@ -33,23 +34,29 @@ export default function ProfilePage({ params }) {
                     {expert.initials}
                   </div>
                   {expert.verified && (
-                    <span className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">✓</span>
+                    <span className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-white">
+                      <Check size={12} strokeWidth={3} />
+                    </span>
                   )}
                 </div>
                 <div className="mb-2">
                   <h1 className="font-display text-2xl font-bold text-navy-900">{expert.name}</h1>
                   <p className="text-sm text-gray-400 mt-0.5">{expert.role}</p>
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">📍 {expert.location}</span>
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <MapPin size={12} /> {expert.location}
+                    </span>
                     <Stars rating={expert.rating} reviews={expert.reviews} />
-                    <span className="text-xs text-gray-400">💼 {expert.experience} ans d'expérience</span>
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <Briefcase size={12} /> {expert.experience} ans d'expérience
+                    </span>
                     <SubBadge plan={expert.plan} />
-                    {expert.verified && <Badge variant="verified">✓ Certifié</Badge>}
+                    {expert.verified && <Badge variant="verified"><Check size={10} strokeWidth={3} /> Certifié</Badge>}
                   </div>
                 </div>
               </div>
               <div className="flex gap-2.5 mb-3">
-                <Link href={`/contact/${expert.id}`} className="btn-outline btn-sm">💬 Contacter</Link>
+                <Link href={`/contact/${expert.id}`} className="btn-outline btn-sm">Contacter</Link>
                 <Link href={`/propose/${expert.id}`} className="btn-gold btn-sm">Proposer un dossier</Link>
               </div>
             </div>
@@ -109,7 +116,7 @@ export default function ProfilePage({ params }) {
               <h5 className="font-display text-sm font-semibold text-navy-800 mb-3">Vérifications</h5>
               {['Email vérifié', 'Carte du barreau', 'Identité nationale', 'Diplôme validé'].map(item => (
                 <div key={item} className="flex items-center gap-2 py-1.5 text-sm text-gray-500">
-                  <span className="text-green-500">✓</span> {item}
+                  <Check size={13} className="text-green-500 flex-shrink-0" /> {item}
                 </div>
               ))}
             </div>

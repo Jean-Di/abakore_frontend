@@ -1,15 +1,11 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { Scale, Calculator, ClipboardList, Landmark, FileText, Building2, Search, Sparkles } from 'lucide-react'
+import { DOMAINS } from '@/lib/data'
+import clsx from 'clsx'
 
-const DOMAINS = [
-  { emoji: '⚖', label: 'Droit des sociétés' },
-  { emoji: '💰', label: 'SYSCOHADA' },
-  { emoji: '📋', label: 'Droit du travail' },
-  { emoji: '🏛', label: 'Arbitrage CCJA' },
-  { emoji: '📄', label: 'Contrats' },
-  { emoji: '🏢', label: 'Création entreprise' },
-]
+const DOMAIN_ICONS = [Scale, Calculator, ClipboardList, Landmark, FileText, Building2]
 
 export default function HeroSection() {
   const [activeChip, setActiveChip] = useState(0)
@@ -31,32 +27,47 @@ export default function HeroSection() {
           Trouvez l&apos;avocat, le comptable ou le consultant OHADA qu&apos;il vous faut. Négociez, collaborez et exécutez vos dossiers entièrement sur la plateforme.
         </p>
         <div className="flex flex-wrap items-center gap-4 mb-10">
-          <Link href="/auth/register" className="btn-gold-lg">✦ Démarrer gratuitement</Link>
+          <Link href="/auth/register" className="btn-gold-lg inline-flex items-center gap-2">
+            <Sparkles size={16} /> Démarrer gratuitement
+          </Link>
           <Link href="/search" className="btn-outline-gold btn-lg">Parcourir les experts →</Link>
         </div>
         <div className="flex items-center bg-white/[0.06] backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden max-w-2xl mb-5 shadow-lg">
           <div className="flex-1 flex items-center gap-3 px-5 py-3.5">
-            <span className="text-xl text-white/40">🔍</span>
+            <Search size={18} className="text-white/40 flex-shrink-0" />
             <input type="text" placeholder="Rechercher un expert OHADA, un acte, un contrat…"
               className="flex-1 bg-transparent border-none outline-none text-white text-[15px] placeholder:text-white/30 font-body" />
           </div>
           <div className="w-px h-8 bg-white/10 flex-shrink-0" />
           <div className="flex items-center gap-2 px-4 text-[13px] text-white/50 cursor-pointer whitespace-nowrap">
-            ⚖ Tous domaines <span className="text-[10px] opacity-60">▼</span>
+            <Scale size={14} /> Tous domaines <span className="text-[10px] opacity-60">▼</span>
           </div>
           <Link href="/search" className="m-1.5 px-5 py-2 bg-gradient-to-br from-gold-500 to-gold-600 text-navy-900 font-bold text-sm rounded-xl whitespace-nowrap hover:brightness-105 transition-all">
             Rechercher
           </Link>
         </div>
         <div className="flex flex-wrap gap-2 mb-16">
-          {DOMAINS.map((d, i) => (
-            <button key={d.label} onClick={() => setActiveChip(i)} className={i === activeChip ? 'chip-active' : 'chip'}>
-              {d.emoji} {d.label}
-            </button>
-          ))}
+          {DOMAINS.map((d, i) => {
+            const Icon = DOMAIN_ICONS[i]
+            return (
+              <button
+                key={d.label}
+                onClick={() => setActiveChip(i)}
+                className={clsx(i === activeChip ? 'chip-active' : 'chip', 'inline-flex items-center gap-1.5')}
+              >
+                {Icon && <Icon size={12} />}
+                {d.label}
+              </button>
+            )
+          })}
         </div>
         <div className="flex flex-wrap gap-10">
-          {[{ val: '2 400+', label: 'Experts certifiés' }, { val: '17', label: 'Pays OHADA couverts' }, { val: '98%', label: 'Satisfaction client' }, { val: '8 500+', label: 'Dossiers traités' }].map(({ val, label }, i) => (
+          {[
+            { val: '2 400+', label: 'Experts certifiés' },
+            { val: '17',     label: 'Pays OHADA couverts' },
+            { val: '98%',    label: 'Satisfaction client' },
+            { val: '8 500+', label: 'Dossiers traités' },
+          ].map(({ val, label }, i) => (
             <div key={label} className="flex items-center gap-10">
               {i > 0 && <div className="w-px h-10 bg-white/10" />}
               <div>
@@ -70,3 +81,4 @@ export default function HeroSection() {
     </section>
   )
 }
+

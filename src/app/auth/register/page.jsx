@@ -5,8 +5,21 @@ import { useRouter } from 'next/navigation'
 import { ROLES } from '@/lib/data'
 import { DividerOr } from '@/components/ui'
 import clsx from 'clsx'
+import {
+  Scale, Calculator, Search, Building2, Briefcase, GraduationCap,
+  Info, FolderOpen, Check, Sparkles, ChevronRight, ArrowLeft,
+} from 'lucide-react'
 
 const STEPS = ['Informations personnelles', 'Choisir votre statut', 'Soumettre vos justificatifs', 'Validation par Abakoré (24–72h)']
+
+const ROLE_ICONS = {
+  lawyer:     Scale,
+  accountant: Calculator,
+  consultant: Search,
+  company:    Building2,
+  hr:         Briefcase,
+  student:    GraduationCap,
+}
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1)
@@ -42,7 +55,7 @@ export default function RegisterPage() {
                       active && 'bg-gold-500 text-navy-900',
                       !done && !active && 'bg-white/[0.06] border border-white/12 text-white/40',
                     )}>
-                      {done ? '✓' : i + 1}
+                      {done ? <Check size={13} strokeWidth={3} /> : i + 1}
                     </div>
                     <span className={clsx('text-[13px]', (active || done) ? 'text-white/80' : 'text-white/40')}>{label}</span>
                   </div>
@@ -51,7 +64,7 @@ export default function RegisterPage() {
             </div>
           </div>
         </div>
-        <p className="relative z-10 text-[11px] text-white/20">© 2024 Abakoré</p>
+        <p className="relative z-10 text-[11px] text-white/20">© 2025 Abakoré</p>
       </div>
 
       {/* Right panel */}
@@ -70,7 +83,7 @@ export default function RegisterPage() {
               <h1 className="font-display text-2xl font-bold text-navy-900 mb-1">Créez votre compte</h1>
               <p className="text-sm text-gray-400 mb-6">Étape 1 / 3 — Vos informations</p>
               <button className="w-full flex items-center justify-center gap-2.5 py-2.5 border-[1.5px] border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all mb-3">
-                <span className="text-lg">G</span> S'inscrire avec Google
+                <span className="text-lg font-bold">G</span> S'inscrire avec Google
               </button>
               <DividerOr />
               <div className="grid grid-cols-2 gap-3 mb-4">
@@ -85,7 +98,9 @@ export default function RegisterPage() {
                   {['Côte d\'Ivoire', 'Sénégal', 'Cameroun', 'Mali', 'Burkina Faso', 'Guinée', 'Niger', 'Togo', 'Bénin', 'Congo'].map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
-              <button className="btn-gold w-full justify-center py-3 rounded-xl" onClick={() => setStep(2)}>Continuer →</button>
+              <button className="btn-gold w-full justify-center py-3 rounded-xl inline-flex items-center gap-2" onClick={() => setStep(2)}>
+                Continuer <ChevronRight size={15} />
+              </button>
               <p className="text-center text-sm text-gray-400 mt-4">
                 Déjà un compte ? <Link href="/auth/login" className="font-semibold text-gold-600">Connexion</Link>
               </p>
@@ -98,30 +113,40 @@ export default function RegisterPage() {
               <h1 className="font-display text-2xl font-bold text-navy-900 mb-1">Votre statut professionnel</h1>
               <p className="text-sm text-gray-400 mb-6">Étape 2 / 3 — Vous pourrez le modifier ultérieurement</p>
               <div className="grid grid-cols-2 gap-2.5 mb-5">
-                {ROLES.map(role => (
-                  <button
-                    key={role.value}
-                    onClick={() => setSelectedRole(role.value)}
-                    className={clsx(
-                      'border-[1.5px] rounded-xl p-3.5 text-left transition-all',
-                      selectedRole === role.value
-                        ? 'border-gold-500 bg-gold-50 shadow-sm'
-                        : 'border-gray-200 hover:border-gold-300 hover:bg-gold-50/50',
-                    )}
-                    style={selectedRole === role.value ? { boxShadow: '0 0 0 3px rgba(201,168,76,0.14)' } : undefined}
-                  >
-                    <div className="text-xl mb-1.5">{role.emoji}</div>
-                    <div className="text-[13px] font-semibold text-navy-800">{role.name}</div>
-                    <div className="text-[11px] text-gray-400 mt-0.5">{role.desc}</div>
-                  </button>
-                ))}
+                {ROLES.map(role => {
+                  const Icon = ROLE_ICONS[role.value] || Scale
+                  return (
+                    <button
+                      key={role.value}
+                      onClick={() => setSelectedRole(role.value)}
+                      className={clsx(
+                        'border-[1.5px] rounded-xl p-3.5 text-left transition-all',
+                        selectedRole === role.value
+                          ? 'border-gold-500 bg-gold-50 shadow-sm'
+                          : 'border-gray-200 hover:border-gold-300 hover:bg-gold-50/50',
+                      )}
+                      style={selectedRole === role.value ? { boxShadow: '0 0 0 3px rgba(201,168,76,0.14)' } : undefined}
+                    >
+                      <div className="w-8 h-8 mb-1.5 rounded-lg bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-500">
+                        <Icon size={16} />
+                      </div>
+                      <div className="text-[13px] font-semibold text-navy-800">{role.name}</div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">{role.desc}</div>
+                    </button>
+                  )
+                })}
               </div>
-              <div className="bg-gold-50 border border-gold-200 rounded-xl p-3 text-xs text-gold-700 mb-5">
-                ℹ Les statuts Avocat, Expert-Comptable et Consultant requièrent une vérification par document. Votre profil sera visible après validation (24–72h ouvrées).
+              <div className="bg-gold-50 border border-gold-200 rounded-xl p-3 text-xs text-gold-700 mb-5 flex gap-2 items-start">
+                <Info size={14} className="flex-shrink-0 mt-0.5 text-gold-500" />
+                Les statuts Avocat, Expert-Comptable et Consultant requièrent une vérification par document. Votre profil sera visible après validation (24–72h ouvrées).
               </div>
               <div className="flex gap-2.5">
-                <button className="btn-outline flex-shrink-0" onClick={() => setStep(1)}>← Retour</button>
-                <button className="btn-gold flex-1 justify-center py-3 rounded-xl" onClick={() => setStep(3)}>Continuer →</button>
+                <button className="btn-outline flex-shrink-0 inline-flex items-center gap-1.5" onClick={() => setStep(1)}>
+                  <ArrowLeft size={14} /> Retour
+                </button>
+                <button className="btn-gold flex-1 justify-center py-3 rounded-xl inline-flex items-center gap-2" onClick={() => setStep(3)}>
+                  Continuer <ChevronRight size={15} />
+                </button>
               </div>
             </div>
           )}
@@ -132,7 +157,9 @@ export default function RegisterPage() {
               <h1 className="font-display text-2xl font-bold text-navy-900 mb-1">Justificatifs</h1>
               <p className="text-sm text-gray-400 mb-6">Étape 3 / 3 — Déposez vos documents de certification</p>
               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center mb-5 cursor-pointer hover:border-gold-400 hover:bg-gold-50/50 transition-all group">
-                <div className="text-3xl mb-3">📁</div>
+                <div className="flex justify-center mb-3 text-gray-300 group-hover:text-gold-400 transition-colors">
+                  <FolderOpen size={36} />
+                </div>
                 <p className="text-sm font-semibold text-navy-800 mb-1">Glissez vos documents ici</p>
                 <p className="text-xs text-gray-400">ou <span className="text-gold-600 font-semibold group-hover:text-gold-700">cliquez pour sélectionner</span></p>
                 <p className="text-[11px] text-gray-300 mt-2">PDF, JPG, PNG · Max 10 Mo par fichier</p>
@@ -142,15 +169,17 @@ export default function RegisterPage() {
                 <div className="flex flex-col gap-1.5">
                   {['Carte professionnelle du barreau', 'Diplôme ou attestation professionnelle', 'Pièce d\'identité nationale'].map(d => (
                     <div key={d} className="flex items-center gap-2 text-[13px] text-gray-500">
-                      <span className="text-gold-500">✦</span> {d}
+                      <Check size={13} className="text-gold-500 flex-shrink-0" /> {d}
                     </div>
                   ))}
                 </div>
               </div>
               <div className="flex gap-2.5">
-                <button className="btn-outline flex-shrink-0" onClick={() => setStep(2)}>← Retour</button>
-                <button className="btn-gold flex-1 justify-center py-3 rounded-xl" onClick={() => router.push('/dashboard')}>
-                  ✦ Créer mon compte
+                <button className="btn-outline flex-shrink-0 inline-flex items-center gap-1.5" onClick={() => setStep(2)}>
+                  <ArrowLeft size={14} /> Retour
+                </button>
+                <button className="btn-gold flex-1 justify-center py-3 rounded-xl inline-flex items-center gap-2" onClick={() => router.push('/dashboard')}>
+                  <Sparkles size={15} /> Créer mon compte
                 </button>
               </div>
               <p className="text-[11px] text-gray-300 text-center mt-4 leading-relaxed">

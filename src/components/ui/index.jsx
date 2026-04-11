@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { Star, Sparkles, Hexagon, Gem, Check, Minus } from 'lucide-react'
 
 /* ── AVATAR ─────────────────────────────────────────────────────────────── */
 export function Avatar({ initials, size = 'md', verified = false, className }) {
@@ -16,7 +17,9 @@ export function Avatar({ initials, size = 'md', verified = false, className }) {
         {initials}
       </div>
       {verified && (
-        <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
+        <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-white">
+          <Check size={8} strokeWidth={3} />
+        </span>
       )}
     </div>
   )
@@ -43,25 +46,34 @@ export function Badge({ children, variant = 'navy', className }) {
 /* ── SUB BADGE ──────────────────────────────────────────────────────────── */
 export function SubBadge({ plan }) {
   const plans = {
-    free:       { cls: 'sub-free',      label: 'Free' },
-    pro:        { cls: 'sub-pro',       label: '⬡ Pro' },
-    premium:    { cls: 'sub-premium',   label: '✦ Premium' },
-    spotlight:  { cls: 'sub-spotlight', label: '★ Spotlight' },
-    enterprise: { cls: 'bg-navy-900 text-gold-400 border border-gold-500/30 inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-bold', label: '◆ Enterprise' },
+    free:       { cls: 'sub-free',      label: 'Free',       Icon: null },
+    pro:        { cls: 'sub-pro',       label: 'Pro',        Icon: Hexagon },
+    premium:    { cls: 'sub-premium',   label: 'Premium',    Icon: Sparkles },
+    spotlight:  { cls: 'sub-spotlight', label: 'Spotlight',  Icon: Star },
+    enterprise: { cls: 'bg-navy-900 text-gold-400 border border-gold-500/30 px-3 py-0.5 rounded-full text-[11px] font-bold', label: 'Enterprise', Icon: Gem },
   }
-  const { cls, label } = plans[plan] || plans.free
-  return <span className={cls}>{label}</span>
+  const { cls, label, Icon } = plans[plan] || plans.free
+  return (
+    <span className={clsx(cls, 'inline-flex items-center gap-1')}>
+      {Icon && <Icon size={10} />}
+      {label}
+    </span>
+  )
 }
 
 /* ── STARS ──────────────────────────────────────────────────────────────── */
 export function Stars({ rating, reviews }) {
   const full = Math.floor(rating)
-  const half = rating % 1 >= 0.5
   return (
     <div className="flex items-center gap-1.5">
-      <div className="flex text-gold-500 text-sm">
+      <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={i < full ? 'text-gold-500' : 'text-gray-200'}>★</span>
+          <Star
+            key={i}
+            size={13}
+            fill={i < full ? 'currentColor' : 'none'}
+            className={i < full ? 'text-gold-500' : 'text-gray-200'}
+          />
         ))}
       </div>
       <span className="text-xs font-semibold text-gray-700">{rating}</span>
@@ -112,7 +124,7 @@ export function Toast({ type = 'info', icon, children }) {
   }
   return (
     <div className={classes[type]}>
-      {icon && <span className="text-base flex-shrink-0 mt-0.5">{icon}</span>}
+      {icon && <span className="flex-shrink-0 mt-0.5">{icon}</span>}
       <div>{children}</div>
     </div>
   )
@@ -139,4 +151,10 @@ export function ProgressBar({ value, className }) {
       />
     </div>
   )
+}
+
+/* ── FEATURE CHECK ──────────────────────────────────────────────────────── */
+export function FeatureCheck({ ok, spotlight }) {
+  if (ok) return <Check size={13} className={spotlight ? 'text-purple-400' : 'text-gold-500'} strokeWidth={2.5} />
+  return <Minus size={13} className="text-gray-300" />
 }

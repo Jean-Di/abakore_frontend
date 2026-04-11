@@ -92,7 +92,7 @@ export const NOTIFICATIONS = [
   { id: 1, type: 'message',  text: 'Nouveau message de Diallo Kouyaté concernant la restructuration.',  time: 'Il y a 20 min',   dot: 'gold',  unread: true },
   { id: 2, type: 'payment',  text: 'Paiement reçu — 250 000 FCFA (dossier arbitrage)',                  time: 'Il y a 2h',     dot: 'green', unread: true },
   { id: 3, type: 'request',  text: 'Nouvelle demande : Contrat bail commercial — Marie Ouédraogo',      time: 'Hier 16h30',    dot: 'navy',  unread: false },
-  { id: 4, type: 'review',   text: '⭐ Nouvel avis 5 étoiles de FoodGroup CI',                         time: 'Hier 14h12',    dot: 'green', unread: false },
+  { id: 4, type: 'review',   text: 'Nouvel avis 5 étoiles de FoodGroup CI',                             time: 'Hier 14h12',    dot: 'green', unread: false },
   { id: 5, type: 'view',     text: 'Votre profil a été consulté 47 fois aujourd\'hui',                  time: 'Aujourd\'hui 09h', dot: 'gold', unread: false },
 ]
 
@@ -111,21 +111,21 @@ export const CONVERSATIONS = [
 ]
 
 export const DOMAINS = [
-  { emoji: '⚖', label: 'Droit des sociétés' },
-  { emoji: '💰', label: 'SYSCOHADA' },
-  { emoji: '📋', label: 'Droit du travail' },
-  { emoji: '🏛', label: 'Arbitrage CCJA' },
-  { emoji: '📄', label: 'Contrats' },
-  { emoji: '🏢', label: 'Création entreprise' },
+  { label: 'Droit des sociétés' },
+  { label: 'SYSCOHADA' },
+  { label: 'Droit du travail' },
+  { label: 'Arbitrage CCJA' },
+  { label: 'Contrats' },
+  { label: 'Création entreprise' },
 ]
 
 export const ROLES = [
-  { emoji: '⚖',  name: 'Avocat / Juriste',       desc: 'Barreau, conseil juridique',   value: 'lawyer' },
-  { emoji: '📊', name: 'Expert-Comptable',         desc: 'SYSCOHADA, audit, fiscalité',  value: 'accountant' },
-  { emoji: '🔍', name: 'Consultant OHADA',         desc: 'Conseils, formations',         value: 'consultant' },
-  { emoji: '🏢', name: 'Entreprise / PME',          desc: 'DAF, DG, RH',                 value: 'company' },
-  { emoji: '👔', name: 'Consultant RH',            desc: 'Droit du travail, RH',         value: 'hr' },
-  { emoji: '🎓', name: 'Étudiant en droit',        desc: 'Master, doctorat OHADA',       value: 'student' },
+  { name: 'Avocat / Juriste',   desc: 'Barreau, conseil juridique',   value: 'lawyer' },
+  { name: 'Expert-Comptable',   desc: 'SYSCOHADA, audit, fiscalité',  value: 'accountant' },
+  { name: 'Consultant OHADA',   desc: 'Conseils, formations',         value: 'consultant' },
+  { name: 'Entreprise / PME',   desc: 'DAF, DG, RH',                 value: 'company' },
+  { name: 'Consultant RH',      desc: 'Droit du travail, RH',         value: 'hr' },
+  { name: 'Étudiant en droit',  desc: 'Master, doctorat OHADA',       value: 'student' },
 ]
 
 export const PRICING_PLANS = [
@@ -138,7 +138,7 @@ export const PRICING_PLANS = [
       { ok: true,  text: '3 recherches / jour' },
       { ok: true,  text: '1 dossier actif' },
       { ok: false, text: 'IA OHADA illimitée' },
-      { ok: false, text: 'Badge ✓ vérifié' },
+      { ok: false, text: 'Badge vérifié' },
       { ok: false, text: 'Paiement escrow' },
     ],
     cta: 'Commencer',
@@ -149,7 +149,7 @@ export const PRICING_PLANS = [
     price: '29 €',
     period: '/mois · Professionnel',
     features: [
-      { ok: true,  text: 'Profil complet + badge ✓' },
+      { ok: true,  text: 'Profil complet + badge vérifié' },
       { ok: true,  text: 'Recherches illimitées' },
       { ok: true,  text: '10 dossiers actifs' },
       { ok: true,  text: 'IA OHADA illimitée' },
@@ -165,14 +165,14 @@ export const PRICING_PLANS = [
     period: '/mois · Expert référencé',
     featured: true,
     features: [
-      { ok: true, text: 'Profil complet + badge ✓' },
+      { ok: true, text: 'Profil complet + badge vérifié' },
       { ok: true, text: 'Recherches illimitées' },
       { ok: true, text: 'Dossiers illimités' },
       { ok: true, text: 'IA OHADA illimitée' },
       { ok: true, text: 'Priorité dans résultats' },
       { ok: true, text: 'Analytics profil' },
     ],
-    cta: '✦ Choisir Premium',
+    cta: 'Choisir Premium',
     ctaStyle: 'gold',
   },
   {
@@ -185,10 +185,10 @@ export const PRICING_PLANS = [
       { ok: true, text: 'Profil mis en lumière' },
       { ok: true, text: 'Top homepage & résultats' },
       { ok: true, text: 'Newsletter Abakoré' },
-      { ok: true, text: 'Badge ★ Spotlight' },
+      { ok: true, text: 'Badge Spotlight' },
       { ok: true, text: 'Compte dédié' },
     ],
-    cta: '★ Spotlight',
+    cta: 'Spotlight',
     ctaStyle: 'spotlight',
   },
 ]

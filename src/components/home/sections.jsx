@@ -1,17 +1,31 @@
-// HowItWorks.jsx
 'use client'
 import Link from 'next/link'
+import clsx from 'clsx'
+import {
+  Scale, Briefcase, Building2, MessageSquare, Lock, Check,
+  ShieldCheck, BarChart2, Bot, Star, Sparkles, Minus, ChevronRight,
+} from 'lucide-react'
+import { EXPERTS } from '@/lib/data'
+import { PRICING_PLANS } from '@/lib/data'
+import { Avatar, Badge, SubBadge, Stars } from '@/components/ui'
 
+// ─── HowItWorks ──────────────────────────────────────────────────────────────
 export function HowItWorks() {
   const steps = [
     {
       n: '1',
       title: 'Créez votre profil',
-      body: 'Inscrivez-vous, choisissez votre statut (avocat, comptable, entreprise…) et soumettez vos justificatifs pour obtenir le badge ✓ vérifié.',
+      body: 'Inscrivez-vous, choisissez votre statut (avocat, comptable, entreprise…) et soumettez vos justificatifs pour obtenir le badge vérifié.',
       extra: (
         <div className="flex flex-wrap gap-1.5 mt-4">
-          {['⚖ Avocat', '📊 Comptable', '🏢 Entreprise'].map(t => (
-            <span key={t} className="badge-navy text-[11px]">{t}</span>
+          {[
+            { Icon: Scale,    label: 'Avocat' },
+            { Icon: BarChart2, label: 'Comptable' },
+            { Icon: Building2, label: 'Entreprise' },
+          ].map(({ Icon, label }) => (
+            <span key={label} className="badge-navy inline-flex items-center gap-1 text-[11px]">
+              <Icon size={11} /> {label}
+            </span>
           ))}
         </div>
       ),
@@ -21,8 +35,8 @@ export function HowItWorks() {
       title: 'Trouvez & contactez',
       body: 'Recherchez parmi 2 400+ experts certifiés. Consultez profils, notes et tarifs. Lancez une conversation directement sur la plateforme.',
       extra: (
-        <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl px-3 py-2 text-xs text-gold-700">
-          💬 Messagerie sécurisée + partage de documents intégré
+        <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl px-3 py-2 text-xs text-gold-700 flex items-center gap-1.5">
+          <MessageSquare size={12} /> Messagerie sécurisée + partage de documents intégré
         </div>
       ),
     },
@@ -32,8 +46,8 @@ export function HowItWorks() {
       body: 'Soumettez votre dossier, suivez l\'avancement en temps réel, validez les livrables et effectuez le paiement sécurisé — sans sortir d\'Abakoré.',
       extra: (
         <div className="flex gap-2 mt-4 flex-wrap">
-          <span className="badge-navy">🔒 Paiement sécurisé</span>
-          <span className="badge-verified">✓ Fonds protégés</span>
+          <span className="badge-navy inline-flex items-center gap-1"><Lock size={11} /> Paiement sécurisé</span>
+          <span className="badge-verified inline-flex items-center gap-1"><ShieldCheck size={11} /> Fonds protégés</span>
         </div>
       ),
     },
@@ -51,7 +65,7 @@ export function HowItWorks() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
           {steps.map((s, i) => (
-            <div key={i} className="card relative">
+            <div key={s.n} className="card relative">
               {i < steps.length - 1 && (
                 <div className="hidden md:block absolute top-12 -right-5 w-10 h-px bg-gradient-to-r from-gold-300 to-transparent z-10" />
               )}
@@ -69,10 +83,7 @@ export function HowItWorks() {
   )
 }
 
-// FeaturedExperts.jsx
-import { EXPERTS } from '@/lib/data'
-import { Avatar, Badge, SubBadge, Stars } from '@/components/ui'
-
+// ─── FeaturedExperts ──────────────────────────────────────────────────────────
 export function FeaturedExperts() {
   return (
     <section className="page-section bg-cream">
@@ -82,7 +93,9 @@ export function FeaturedExperts() {
             <p className="sec-label">Experts à la une</p>
             <h2 className="sec-title mb-0">Profils vérifiés & recommandés</h2>
           </div>
-          <Link href="/search" className="btn-outline">Voir tous les experts →</Link>
+          <Link href="/search" className="btn-outline inline-flex items-center gap-1.5">
+            Voir tous les experts <ChevronRight size={14} />
+          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {EXPERTS.map(e => (
@@ -118,13 +131,13 @@ export function FeaturedExperts() {
   )
 }
 
-// FeaturesSection.jsx
+// ─── FeaturesSection ──────────────────────────────────────────────────────────
 export function FeaturesSection() {
   const features = [
-    { icon: '⚖', title: 'Base OHADA intégrée & IA', body: 'Posez vos questions juridiques en langage naturel. L\'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources.' },
-    { icon: '🔒', title: 'Paiement & escrow sécurisés', body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
-    { icon: '✓',  title: 'Vérification des profils',    body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
-    { icon: '📊', title: 'Suivi de dossiers en temps réel', body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
+    { Icon: Bot,        title: 'Base OHADA intégrée & IA',          body: 'Posez vos questions juridiques en langage naturel. L\'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources.' },
+    { Icon: Lock,       title: 'Paiement & escrow sécurisés',        body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
+    { Icon: ShieldCheck, title: 'Vérification des profils',          body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
+    { Icon: BarChart2,  title: 'Suivi de dossiers en temps réel',    body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
   ]
 
   return (
@@ -136,14 +149,14 @@ export function FeaturesSection() {
             <p className="sec-label">Fonctionnalités</p>
             <h2 className="sec-title">Tout ce qu'il faut,<br />nulle part ailleurs</h2>
             <div className="flex flex-col gap-5 mt-10">
-              {features.map((f, i) => (
-                <div key={i} className="flex gap-4 p-5 rounded-2xl border-[1.5px] border-transparent hover:bg-white hover:border-gold-300 hover:shadow-sm transition-all cursor-default group">
-                  <div className="w-11 h-11 flex-shrink-0 rounded-xl bg-gold-50 border border-gold-200 flex items-center justify-center text-xl group-hover:bg-gold-100 transition-colors">
-                    {f.icon}
+              {features.map(({ Icon, title, body }) => (
+                <div key={title} className="flex gap-4 p-5 rounded-2xl border-[1.5px] border-transparent hover:bg-white hover:border-gold-300 hover:shadow-sm transition-all cursor-default group">
+                  <div className="w-11 h-11 flex-shrink-0 rounded-xl bg-gold-50 border border-gold-200 flex items-center justify-center group-hover:bg-gold-100 transition-colors">
+                    <Icon size={20} className="text-gold-600" />
                   </div>
                   <div>
-                    <h3 className="font-display text-[15px] font-semibold text-navy-800 mb-1">{f.title}</h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed">{f.body}</p>
+                    <h3 className="font-display text-[15px] font-semibold text-navy-800 mb-1">{title}</h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed">{body}</p>
                   </div>
                 </div>
               ))}
@@ -154,7 +167,9 @@ export function FeaturesSection() {
           <div className="bg-navy-900 rounded-3xl p-7 border border-gold-500/15 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/8 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10">
-              <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gold-500/60 mb-5">✦ OHADA Intelligence</p>
+              <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gold-500/60 mb-5 flex items-center gap-1.5">
+                <Sparkles size={12} /> OHADA Intelligence
+              </p>
               <div className="bg-white/[0.06] border border-white/10 rounded-xl p-4 mb-3">
                 <p className="text-xs text-white/40 mb-2">Question IA</p>
                 <p className="text-[13px] text-white/85 leading-relaxed">"Quelles sont les conditions de validité d'un contrat de bail commercial sous l'Acte Uniforme OHADA ?"</p>
@@ -180,10 +195,7 @@ export function FeaturesSection() {
   )
 }
 
-// PricingSection.jsx
-import { PRICING_PLANS } from '@/lib/data'
-import clsx from 'clsx'
-
+// ─── PricingSection ───────────────────────────────────────────────────────────
 export function PricingSection() {
   return (
     <section className="page-section bg-cream" id="pricing">
@@ -211,8 +223,8 @@ export function PricingSection() {
               }}
             >
               {plan.featured && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-900 text-[11px] font-bold px-4 py-1 rounded-full whitespace-nowrap">
-                  ⭐ Populaire
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-900 text-[11px] font-bold px-4 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1">
+                  <Star size={10} fill="currentColor" /> Populaire
                 </span>
               )}
               <p className={clsx('text-[11px] font-bold tracking-widest uppercase mb-2.5', plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-300/70' : 'text-gray-300')}>
@@ -227,9 +239,10 @@ export function PricingSection() {
               <ul className="space-y-0.5 mb-6">
                 {plan.features.map(({ ok, text }) => (
                   <li key={text} className={clsx('flex items-start gap-2 py-1.5 text-[13px] border-b last:border-0', plan.featured ? 'border-white/[0.07] text-white/70' : plan.spotlight ? 'border-purple-500/15 text-purple-200/75' : 'border-gray-50 text-gray-500')}>
-                    <span className={ok ? (plan.spotlight ? 'text-purple-400' : 'text-gold-500') : 'text-gray-200'} style={{ fontWeight: 700 }}>
-                      {ok ? (plan.spotlight ? '★' : '✦') : '–'}
-                    </span>
+                    {ok
+                      ? <Check size={13} strokeWidth={2.5} className={plan.spotlight ? 'text-purple-400 flex-shrink-0 mt-0.5' : 'text-gold-500 flex-shrink-0 mt-0.5'} />
+                      : <Minus size={13} className="text-gray-300 flex-shrink-0 mt-0.5" />
+                    }
                     {text}
                   </li>
                 ))}
@@ -237,7 +250,7 @@ export function PricingSection() {
               <Link
                 href="/auth/register"
                 className={clsx(
-                  'flex justify-center w-full py-2.5 rounded-xl text-sm font-semibold transition-all',
+                  'flex justify-center items-center gap-1.5 w-full py-2.5 rounded-xl text-sm font-semibold transition-all',
                   plan.ctaStyle === 'gold'      && 'btn-gold',
                   plan.ctaStyle === 'navy'      && 'btn-navy',
                   plan.ctaStyle === 'outline'   && 'btn-outline',
@@ -245,6 +258,8 @@ export function PricingSection() {
                 )}
                 style={plan.ctaStyle === 'spotlight' ? { background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' } : undefined}
               >
+                {plan.ctaStyle === 'gold' && <Sparkles size={13} />}
+                {plan.ctaStyle === 'spotlight' && <Star size={13} />}
                 {plan.cta}
               </Link>
             </div>
@@ -255,7 +270,7 @@ export function PricingSection() {
   )
 }
 
-// CtaSection.jsx
+// ─── CtaSection ───────────────────────────────────────────────────────────────
 export function CtaSection() {
   return (
     <section className="page-section">
@@ -272,7 +287,9 @@ export function CtaSection() {
               PME à la recherche d'expertise ou professionnel cherchant à développer sa clientèle — Abakoré vous connecte.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/auth/register" className="btn-gold-lg">✦ Créer mon profil gratuitement</Link>
+              <Link href="/auth/register" className="btn-gold-lg inline-flex items-center gap-2">
+                <Sparkles size={16} /> Créer mon profil gratuitement
+              </Link>
               <Link href="/search" className="btn-outline-gold btn-lg">Parcourir les experts</Link>
             </div>
           </div>

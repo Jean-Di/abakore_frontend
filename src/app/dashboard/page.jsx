@@ -5,24 +5,36 @@ import Navbar from '@/components/layout/Navbar'
 import { SubBadge, StatusBadge, ProgressBar } from '@/components/ui'
 import { PROJECTS, NOTIFICATIONS, CURRENT_USER } from '@/lib/data'
 import clsx from 'clsx'
+import {
+  Home, User, FolderOpen, MessageSquare, Scale, Search,
+  BarChart2, CreditCard, Settings, LogOut, Banknote, Star,
+  Eye, TrendingUp, TrendingDown, Bell, ChevronRight,
+} from 'lucide-react'
 
 const SIDEBAR_ITEMS = [
-  { icon: '🏠', label: 'Tableau de bord',  href: '/dashboard',   key: 'dash' },
-  { icon: '👤', label: 'Mon profil',        href: '/profile/kofi-asante', key: 'profile' },
-  { icon: '📋', label: 'Mes dossiers',      href: '#',            key: 'dossiers', badge: 3 },
-  { icon: '💬', label: 'Messagerie',        href: '/messages',    key: 'messages', badge: 5 },
-  { icon: '⚖',  label: 'OHADA IA',         href: '#',            key: 'ia' },
-  { icon: '🔍', label: 'Recherche',         href: '/search',      key: 'search' },
-  { icon: '📊', label: 'Statistiques',      href: '#',            key: 'stats' },
-  { icon: '💳', label: 'Abonnement',        href: '#',            key: 'sub' },
-  { icon: '⚙',  label: 'Paramètres',       href: '#',            key: 'settings' },
+  { Icon: Home,          label: 'Tableau de bord',  href: '/dashboard',          key: 'dash' },
+  { Icon: User,          label: 'Mon profil',        href: '/profile/kofi-asante', key: 'profile' },
+  { Icon: FolderOpen,    label: 'Mes dossiers',      href: '#',                   key: 'dossiers', badge: 3 },
+  { Icon: MessageSquare, label: 'Messagerie',        href: '/messages',           key: 'messages', badge: 5 },
+  { Icon: Scale,         label: 'OHADA IA',          href: '/ohada-ia',           key: 'ia' },
+  { Icon: Search,        label: 'Recherche',         href: '/search',             key: 'search' },
+  { Icon: BarChart2,     label: 'Statistiques',      href: '#',                   key: 'stats' },
+  { Icon: CreditCard,    label: 'Abonnement',        href: '#',                   key: 'sub' },
+  { Icon: Settings,      label: 'Paramètres',        href: '#',                   key: 'settings' },
 ]
 
 const KPIS = [
-  { icon: '📋', val: '127',   label: 'Dossiers total',   change: '+8 ce mois',  up: true },
-  { icon: '💰', val: '4.2M',  label: 'FCFA ce mois',     change: '+18%',         up: true },
-  { icon: '⭐', val: '4.9',   label: 'Note moyenne',     change: 'Stable',       up: true },
-  { icon: '👁', val: '1 240', label: 'Vues profil (30j)', change: '+34%',         up: true },
+  { Icon: FolderOpen, val: '127',   label: 'Dossiers total',    change: '+8 ce mois', up: true },
+  { Icon: Banknote,   val: '4.2M',  label: 'FCFA ce mois',      change: '+18%',       up: true },
+  { Icon: Star,       val: '4.9',   label: 'Note moyenne',      change: 'Stable',     up: true },
+  { Icon: Eye,        val: '1 240', label: 'Vues profil (30j)', change: '+34%',       up: true },
+]
+
+const QUICK_ACTIONS = [
+  { Icon: Search,        label: 'Trouver un expert',  href: '/search' },
+  { Icon: MessageSquare, label: 'Messagerie',         href: '/messages' },
+  { Icon: Scale,         label: 'OHADA IA',           href: '/ohada-ia' },
+  { Icon: BarChart2,     label: 'Mes statistiques',   href: '#' },
 ]
 
 const DOT_COLORS = {
@@ -33,6 +45,11 @@ const DOT_COLORS = {
 
 export default function DashboardPage() {
   const [activeKey, setActiveKey] = useState('dash')
+
+  const today = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
 
   return (
     <>
@@ -57,41 +74,41 @@ export default function DashboardPage() {
 
           <nav className="px-3 pb-4">
             <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2">Principal</p>
-            {SIDEBAR_ITEMS.slice(0, 4).map(item => (
-              <Link key={item.key} href={item.href}
-                onClick={() => setActiveKey(item.key)}
+            {SIDEBAR_ITEMS.slice(0, 4).map(({ Icon, label, href, key, badge }) => (
+              <Link key={key} href={href}
+                onClick={() => setActiveKey(key)}
                 className={clsx(
                   'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 transition-all',
-                  activeKey === item.key ? 'bg-gold-50 text-gold-700' : 'text-gray-500 hover:bg-gray-50 hover:text-navy-800'
+                  activeKey === key ? 'bg-gold-50 text-gold-700' : 'text-gray-500 hover:bg-gray-50 hover:text-navy-800'
                 )}>
-                <span className="text-base w-5 text-center">{item.icon}</span>
-                <span className="flex-1">{item.label}</span>
-                {item.badge && (
-                  <span className="text-[10px] font-bold bg-gold-500 text-navy-900 px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                <Icon size={16} className="flex-shrink-0" />
+                <span className="flex-1">{label}</span>
+                {badge && (
+                  <span className="text-[10px] font-bold bg-gold-500 text-navy-900 px-1.5 py-0.5 rounded-full">{badge}</span>
                 )}
               </Link>
             ))}
 
             <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2 mt-2">Outils</p>
-            {SIDEBAR_ITEMS.slice(4, 7).map(item => (
-              <Link key={item.key} href={item.href}
+            {SIDEBAR_ITEMS.slice(4, 7).map(({ Icon, label, href, key }) => (
+              <Link key={key} href={href}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 text-gray-500 hover:bg-gray-50 hover:text-navy-800 transition-all">
-                <span className="text-base w-5 text-center">{item.icon}</span>
-                {item.label}
+                <Icon size={16} className="flex-shrink-0" />
+                {label}
               </Link>
             ))}
 
             <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2 mt-2">Compte</p>
-            {SIDEBAR_ITEMS.slice(7).map(item => (
-              <Link key={item.key} href={item.href}
+            {SIDEBAR_ITEMS.slice(7).map(({ Icon, label, href, key }) => (
+              <Link key={key} href={href}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 text-gray-500 hover:bg-gray-50 hover:text-navy-800 transition-all">
-                <span className="text-base w-5 text-center">{item.icon}</span>
-                {item.label}
+                <Icon size={16} className="flex-shrink-0" />
+                {label}
               </Link>
             ))}
 
             <button className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all w-full mt-1">
-              <span className="text-base w-5 text-center">🚪</span>
+              <LogOut size={16} className="flex-shrink-0" />
               Déconnexion
             </button>
           </nav>
@@ -101,17 +118,17 @@ export default function DashboardPage() {
         <main className="flex-1 md:ml-[240px] p-6 md:p-8">
           {/* Greeting */}
           <h1 className="font-display text-2xl font-bold text-navy-900">Bonjour, Kofi 👋</h1>
-          <p className="text-sm text-gray-400 mb-6 mt-1">Lundi 20 janvier 2025 · 3 dossiers actifs</p>
+          <p className="text-sm text-gray-400 mb-6 mt-1">{capitalize(today)} · 3 dossiers actifs</p>
 
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {KPIS.map(({ icon, val, label, change, up }) => (
+            {KPIS.map(({ Icon, val, label, change, up }) => (
               <div key={label} className="bg-white border border-gray-100 rounded-2xl p-4" style={{ boxShadow: 'var(--shadow-sm)' }}>
-                <div className="text-xl mb-2">{icon}</div>
+                <Icon size={20} className="mb-2 text-gray-400" />
                 <p className="font-display text-2xl font-bold text-navy-900">{val}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-                <p className={clsx('text-xs font-semibold mt-1.5', up ? 'text-green-600' : 'text-red-500')}>
-                  {up ? '↑' : '↓'} {change}
+                <p className={clsx('text-xs font-semibold mt-1.5 flex items-center gap-0.5', up ? 'text-green-600' : 'text-red-500')}>
+                  {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {change}
                 </p>
               </div>
             ))}
@@ -124,7 +141,9 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-display text-base font-semibold text-navy-800">Dossiers actifs</h2>
-                <button className="text-xs font-semibold text-gold-600 hover:text-gold-700">Voir tout →</button>
+                <button className="text-xs font-semibold text-gold-600 hover:text-gold-700 flex items-center gap-0.5">
+                  Voir tout <ChevronRight size={13} />
+                </button>
               </div>
               <div className="flex flex-col gap-3">
                 {PROJECTS.map(p => (
@@ -143,7 +162,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
-                <Link href="/search" className="btn-outline btn-sm w-fit">
+                <Link href="/search" className="btn-outline btn-sm w-fit inline-flex items-center gap-1.5">
                   + Nouveau dossier
                 </Link>
               </div>
@@ -152,17 +171,14 @@ export default function DashboardPage() {
               <div className="mt-6">
                 <h2 className="font-display text-base font-semibold text-navy-800 mb-4">Actions rapides</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { icon: '🔍', label: 'Trouver un expert',     href: '/search' },
-                    { icon: '💬', label: 'Messagerie',             href: '/messages' },
-                    { icon: '⚖',  label: 'OHADA IA',              href: '#' },
-                    { icon: '📊', label: 'Mes statistiques',       href: '#' },
-                  ].map(a => (
-                    <Link key={a.label} href={a.href}
+                  {QUICK_ACTIONS.map(({ Icon, label, href }) => (
+                    <Link key={label} href={href}
                       className="bg-white border border-gray-100 rounded-xl p-4 text-center hover:border-gold-300 hover:shadow-sm transition-all cursor-pointer group"
                       style={{ boxShadow: 'var(--shadow-sm)' }}>
-                      <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{a.icon}</div>
-                      <p className="text-xs font-medium text-gray-600 group-hover:text-navy-800">{a.label}</p>
+                      <div className="flex justify-center mb-2">
+                        <Icon size={24} className="text-gray-400 group-hover:text-gold-600 group-hover:scale-110 transition-all" />
+                      </div>
+                      <p className="text-xs font-medium text-gray-600 group-hover:text-navy-800">{label}</p>
                     </Link>
                   ))}
                 </div>
@@ -176,14 +192,14 @@ export default function DashboardPage() {
                 <span className="text-xs font-semibold text-gold-600 bg-gold-100 px-2 py-0.5 rounded-full">2 nouvelles</span>
               </div>
               <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
-                {NOTIFICATIONS.map((n, i) => (
+                {NOTIFICATIONS.map((n) => (
                   <div key={n.id} className={clsx(
                     'flex gap-3 p-4 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50 cursor-pointer',
                     n.unread && 'bg-gold-50/50'
                   )}>
                     <div className={clsx('w-2 h-2 rounded-full flex-shrink-0 mt-1.5', DOT_COLORS[n.dot])} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-600 leading-snug" dangerouslySetInnerHTML={{ __html: n.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                      <p className="text-sm text-gray-600 leading-snug">{n.text}</p>
                       <p className="text-xs text-gray-300 mt-1">{n.time}</p>
                     </div>
                     {n.unread && <div className="w-1.5 h-1.5 rounded-full bg-gold-500 flex-shrink-0 mt-2" />}
@@ -199,7 +215,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-xs text-white/50 mb-3">Renouvellement le 15 fév. 2025</p>
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  {[['127', 'Missions'], ['4.9★', 'Note'], ['98%', 'Succès']].map(([v, l]) => (
+                  {[['127', 'Missions'], ['4.9', 'Note'], ['98%', 'Succès']].map(([v, l]) => (
                     <div key={l} className="text-center bg-white/[0.06] rounded-lg py-2">
                       <p className="font-display text-sm font-bold text-gold-400">{v}</p>
                       <p className="text-[10px] text-white/40 mt-0.5">{l}</p>

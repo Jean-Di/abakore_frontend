@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, Search, Menu, X, MessageSquare } from 'lucide-react'
+import { Bell, Menu, X, MessageSquare, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 
 const NAV_LINKS = [
@@ -62,13 +62,13 @@ export default function Navbar() {
           </button>
           <Link href="/messages" className="hidden md:flex w-9 h-9 items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.07] transition-all relative">
             <MessageSquare size={16} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gold-500 rounded-full"></span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gold-500 rounded-full" />
           </Link>
           <Link href="/auth/login" className="btn-ghost hidden md:inline-flex">
             Connexion
           </Link>
-          <Link href="/auth/register" className="btn-gold btn-sm hidden md:inline-flex">
-            ✦ S'inscrire
+          <Link href="/auth/register" className="btn-gold btn-sm hidden md:inline-flex items-center gap-1.5">
+            <Sparkles size={12} /> S'inscrire
           </Link>
           <button
             className="md:hidden w-9 h-9 flex items-center justify-center text-white/70 hover:text-white"
@@ -95,7 +95,9 @@ export default function Navbar() {
             ))}
             <div className="mt-6 flex flex-col gap-3">
               <Link href="/auth/login" className="btn-outline-gold justify-center">Connexion</Link>
-              <Link href="/auth/register" className="btn-gold justify-center">✦ S'inscrire</Link>
+              <Link href="/auth/register" className="btn-gold justify-center flex items-center gap-1.5">
+                <Sparkles size={14} /> S'inscrire
+              </Link>
             </div>
           </div>
         </div>

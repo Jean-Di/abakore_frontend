@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import { CONVERSATIONS } from '@/lib/data'
 import Link from 'next/link'
 import clsx from 'clsx'
+import { FileText, Paperclip, Scale, MoreVertical, Send } from 'lucide-react'
 
 const MESSAGES = [
   { id: 1, mine: false, text: 'Bonjour Maître Asante, j\'aurais besoin de clarifications sur les clauses de non-concurrence dans notre contrat de distribution UEMOA. Notamment concernant la durée applicable sous l\'AUDCG.', time: '10h31' },
@@ -79,18 +80,19 @@ export default function MessagesPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-navy-800">{conv.name}</p>
-                <p className={clsx('text-xs', conv.online ? 'text-green-500' : 'text-gray-400')}>
-                  {conv.online ? '● En ligne' : '○ Hors ligne'}
+                <p className={clsx('text-xs flex items-center gap-1', conv.online ? 'text-green-500' : 'text-gray-400')}>
+                  <span className={clsx('w-1.5 h-1.5 rounded-full inline-block', conv.online ? 'bg-green-500' : 'bg-gray-300')} />
+                  {conv.online ? 'En ligne' : 'Hors ligne'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden sm:flex badge-navy items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
-                📋 Contrat distribution
+                Contrat distribution
               </span>
               <Link href="#" className="btn-outline btn-sm text-xs">Voir le dossier</Link>
-              <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gray-300 transition-all text-sm">
-                ⋮
+              <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gray-300 transition-all">
+                <MoreVertical size={15} />
               </button>
             </div>
           </div>
@@ -121,11 +123,11 @@ export default function MessagesPage() {
                     {msg.doc && (
                       <div className={clsx(
                         'flex items-center gap-2.5 mt-2 px-3 py-2 rounded-xl text-xs',
-                        msg.gold
+                        msg.doc.gold
                           ? 'bg-gold-500/15 border border-gold-500/25 text-gold-600'
                           : 'bg-navy-50 border border-navy-100 text-navy-700'
                       )}>
-                        <span className="text-base">📄</span>
+                        <FileText size={14} className="flex-shrink-0" />
                         <span className="flex-1 font-medium truncate">{msg.doc.name}</span>
                         <span className="text-gray-400 flex-shrink-0">{msg.doc.size}</span>
                       </div>
@@ -146,8 +148,12 @@ export default function MessagesPage() {
           {/* Input area */}
           <div className="bg-white border-t border-gray-100 px-4 py-3 flex items-end gap-2.5 flex-shrink-0">
             <div className="flex gap-1.5">
-              <button className="w-9 h-9 rounded-xl border-[1.5px] border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gold-400 hover:bg-gold-50 transition-all text-sm" title="Joindre un fichier">📎</button>
-              <button className="w-9 h-9 rounded-xl border-[1.5px] border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gold-400 hover:bg-gold-50 transition-all text-sm" title="OHADA IA">⚖</button>
+              <button className="w-9 h-9 rounded-xl border-[1.5px] border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gold-400 hover:bg-gold-50 transition-all" title="Joindre un fichier">
+                <Paperclip size={15} />
+              </button>
+              <button className="w-9 h-9 rounded-xl border-[1.5px] border-gray-200 flex items-center justify-center text-gray-400 hover:text-navy-700 hover:border-gold-400 hover:bg-gold-50 transition-all" title="OHADA IA">
+                <Scale size={15} />
+              </button>
             </div>
             <textarea
               rows={1}
@@ -157,8 +163,8 @@ export default function MessagesPage() {
               onChange={e => setText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); setText('') } }}
             />
-            <button className="btn-gold btn-sm flex-shrink-0 h-9">
-              Envoyer ↗
+            <button className="btn-gold btn-sm flex-shrink-0 h-9 inline-flex items-center gap-1.5">
+              Envoyer <Send size={13} />
             </button>
           </div>
         </div>

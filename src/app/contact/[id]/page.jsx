@@ -2,33 +2,37 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
-import { Avatar, SubBadge, Stars, Badge, Toast } from '@/components/ui'
+import { SubBadge, Stars, Toast } from '@/components/ui'
 import { EXPERTS } from '@/lib/data'
 import clsx from 'clsx'
+import {
+  MessageSquare, FileText, DollarSign, HelpCircle, Users,
+  Lock, Info, Clock, CheckCircle2, Briefcase, MapPin, AlertTriangle, Check,
+} from 'lucide-react'
 
 const SUBJECTS = [
-  { value: 'consultation', label: '💬 Demande de consultation',       desc: 'Discussion initiale sur votre problématique' },
-  { value: 'dossier',      label: '📋 Proposition de dossier',        desc: 'Confier un dossier complet à cet expert' },
-  { value: 'devis',        label: '💰 Demande de devis',              desc: 'Obtenir une estimation tarifaire' },
-  { value: 'question',     label: '❓ Question ponctuelle OHADA',     desc: 'Question rapide sur un point juridique' },
-  { value: 'collaboration',label: '🤝 Collaboration professionnelle', desc: 'Proposition de partenariat entre experts' },
+  { value: 'consultation', label: 'Demande de consultation',       Icon: MessageSquare, desc: 'Discussion initiale sur votre problématique' },
+  { value: 'dossier',      label: 'Proposition de dossier',        Icon: FileText,      desc: 'Confier un dossier complet à cet expert' },
+  { value: 'devis',        label: 'Demande de devis',              Icon: DollarSign,    desc: 'Obtenir une estimation tarifaire' },
+  { value: 'question',     label: 'Question ponctuelle OHADA',     Icon: HelpCircle,    desc: 'Question rapide sur un point juridique' },
+  { value: 'collaboration',label: 'Collaboration professionnelle', Icon: Users,         desc: 'Proposition de partenariat entre experts' },
 ]
 
 const URGENCY = [
-  { value: 'low',    label: 'Pas urgent',     desc: 'Sous 2 semaines',  color: 'border-gray-200 text-gray-600' },
-  { value: 'medium', label: 'Modéré',         desc: 'Sous 1 semaine',   color: 'border-gold-300 text-gold-700' },
-  { value: 'high',   label: 'Urgent',         desc: 'Sous 48h',         color: 'border-orange-300 text-orange-700' },
-  { value: 'asap',   label: 'Très urgent',    desc: 'Immédiat',         color: 'border-red-300 text-red-600' },
+  { value: 'low',    label: 'Pas urgent',  desc: 'Sous 2 semaines', color: 'border-gray-200 text-gray-600' },
+  { value: 'medium', label: 'Modéré',      desc: 'Sous 1 semaine',  color: 'border-gold-300 text-gold-700' },
+  { value: 'high',   label: 'Urgent',      desc: 'Sous 48h',        color: 'border-orange-300 text-orange-700' },
+  { value: 'asap',   label: 'Très urgent', desc: 'Immédiat',        color: 'border-red-300 text-red-600' },
 ]
 
 export default function ContactPage({ params }) {
   const expert = EXPERTS.find(e => e.id === params.id) || EXPERTS[0]
-  const [subject, setSubject]   = useState('consultation')
-  const [urgency, setUrgency]   = useState('medium')
-  const [message, setMessage]   = useState('')
-  const [budget, setBudget]     = useState('')
-  const [sent, setSent]         = useState(false)
-  const [step, setStep]         = useState(1) // 1: form, 2: confirm
+  const [subject, setSubject] = useState('consultation')
+  const [urgency, setUrgency] = useState('medium')
+  const [message, setMessage] = useState('')
+  const [budget, setBudget]   = useState('')
+  const [sent, setSent]       = useState(false)
+  const [step, setStep]       = useState(1)
 
   const handleSend = () => {
     if (step === 1) { setStep(2); return }
@@ -41,20 +45,20 @@ export default function ContactPage({ params }) {
         <Navbar />
         <div className="min-h-screen bg-gray-50 pt-16 flex items-center justify-center px-6">
           <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center text-4xl">
-              ✅
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
+              <CheckCircle2 size={40} className="text-green-500" />
             </div>
             <h1 className="font-display text-2xl font-bold text-navy-900 mb-2">Message envoyé !</h1>
             <p className="text-gray-400 mb-2">Votre message a bien été transmis à</p>
             <p className="font-semibold text-navy-800 mb-6">{expert.name}</p>
             <div className="bg-gold-50 border border-gold-200 rounded-2xl p-5 mb-8 text-left">
-              <p className="text-sm font-semibold text-gold-700 mb-1">⏱ Temps de réponse moyen</p>
+              <p className="text-sm font-semibold text-gold-700 mb-1 flex items-center gap-1.5"><Clock size={14} /> Temps de réponse moyen</p>
               <p className="text-2xl font-display font-bold text-navy-900">{expert.responseTime}</p>
               <p className="text-xs text-gray-400 mt-1">Vous serez notifié par email dès qu'il répond</p>
             </div>
             <div className="flex flex-col gap-2.5">
-              <Link href="/messages" className="btn-gold w-full justify-center py-3 rounded-xl">
-                💬 Aller à la messagerie
+              <Link href="/messages" className="btn-gold w-full justify-center py-3 rounded-xl inline-flex items-center gap-1.5">
+                <MessageSquare size={15} /> Aller à la messagerie
               </Link>
               <Link href={`/profile/${expert.id}`} className="btn-outline w-full justify-center py-3 rounded-xl">
                 ← Retour au profil
@@ -98,7 +102,7 @@ export default function ContactPage({ params }) {
                         'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
                         step === i + 1 ? 'bg-gold-500 text-navy-900' : step > i + 1 ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
                       )}>
-                        {step > i + 1 ? '✓' : i + 1}
+                        {step > i + 1 ? <Check size={12} strokeWidth={3} /> : i + 1}
                       </div>
                       {label}
                     </div>
@@ -112,27 +116,28 @@ export default function ContactPage({ params }) {
                   <div className="card mb-4">
                     <h2 className="font-display text-base font-semibold text-navy-800 mb-4">Objet de votre message</h2>
                     <div className="grid grid-cols-1 gap-2">
-                      {SUBJECTS.map(s => (
+                      {SUBJECTS.map(({ value, label, Icon, desc }) => (
                         <button
-                          key={s.value}
-                          onClick={() => setSubject(s.value)}
+                          key={value}
+                          onClick={() => setSubject(value)}
                           className={clsx(
                             'flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all',
-                            subject === s.value
+                            subject === value
                               ? 'border-gold-500 bg-gold-50'
                               : 'border-gray-200 hover:border-gold-300 hover:bg-gold-50/40'
                           )}
-                          style={subject === s.value ? { boxShadow: '0 0 0 3px rgba(201,168,76,0.12)' } : undefined}
+                          style={subject === value ? { boxShadow: '0 0 0 3px rgba(201,168,76,0.12)' } : undefined}
                         >
                           <div className={clsx(
                             'w-4 h-4 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-all',
-                            subject === s.value ? 'border-gold-500' : 'border-gray-300'
+                            subject === value ? 'border-gold-500' : 'border-gray-300'
                           )}>
-                            {subject === s.value && <div className="w-2 h-2 rounded-full bg-gold-500" />}
+                            {subject === value && <div className="w-2 h-2 rounded-full bg-gold-500" />}
                           </div>
+                          <Icon size={15} className="flex-shrink-0 mt-0.5 text-gray-400" />
                           <div>
-                            <p className="text-sm font-semibold text-navy-800">{s.label}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">{s.desc}</p>
+                            <p className="text-sm font-semibold text-navy-800">{label}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
                           </div>
                         </button>
                       ))}
@@ -187,7 +192,7 @@ export default function ContactPage({ params }) {
                           className={clsx(
                             'p-3 rounded-xl border-[1.5px] text-center transition-all',
                             urgency === u.value
-                              ? `${u.color} bg-opacity-10 font-semibold`
+                              ? `${u.color} font-semibold`
                               : 'border-gray-200 text-gray-500 hover:border-gray-300'
                           )}
                           style={urgency === u.value ? { background: 'rgba(201,168,76,0.05)', boxShadow: '0 0 0 3px rgba(201,168,76,0.10)' } : undefined}
@@ -203,7 +208,9 @@ export default function ContactPage({ params }) {
                   <div className="card mb-6">
                     <h2 className="font-display text-base font-semibold text-navy-800 mb-4">Documents joints (optionnel)</h2>
                     <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer hover:border-gold-400 hover:bg-gold-50/40 transition-all group">
-                      <div className="text-2xl mb-2">📎</div>
+                      <div className="flex justify-center mb-2">
+                        <FileText size={24} className="text-gray-300 group-hover:text-gold-400 transition-colors" />
+                      </div>
                       <p className="text-sm font-semibold text-navy-800 mb-0.5">Glissez vos fichiers ici</p>
                       <p className="text-xs text-gray-400">ou <span className="text-gold-600 font-semibold">cliquez pour sélectionner</span></p>
                       <p className="text-[11px] text-gray-300 mt-1.5">PDF, DOCX, JPG, PNG · Max 20 Mo</p>
@@ -239,14 +246,14 @@ export default function ContactPage({ params }) {
                     </div>
                   </div>
 
-                  <Toast type="info" icon="ℹ">
+                  <Toast type="info" icon={<Info size={15} className="text-blue-500" />}>
                     <span>Votre message sera visible dans la messagerie sécurisée Abakoré. <strong>{expert.name}</strong> répond généralement en {expert.responseTime}.</span>
                   </Toast>
 
                   <div className="flex gap-3 mt-5">
                     <button className="btn-outline flex-shrink-0" onClick={() => setStep(1)}>← Modifier</button>
-                    <button className="btn-gold flex-1 justify-center py-3.5 rounded-xl" onClick={handleSend}>
-                      ✦ Envoyer le message
+                    <button className="btn-gold flex-1 justify-center py-3.5 rounded-xl inline-flex items-center gap-1.5" onClick={handleSend}>
+                      <Check size={15} /> Envoyer le message
                     </button>
                   </div>
                 </div>
@@ -263,7 +270,9 @@ export default function ContactPage({ params }) {
                       {expert.initials}
                     </div>
                     {expert.verified && (
-                      <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
+                      <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-white">
+                        <Check size={8} strokeWidth={3} />
+                      </span>
                     )}
                   </div>
                   <div>
@@ -275,14 +284,14 @@ export default function ContactPage({ params }) {
                 <Stars rating={expert.rating} reviews={expert.reviews} />
                 <div className="mt-4 flex flex-col gap-2">
                   {[
-                    ['⏱ Temps de réponse', expert.responseTime],
-                    ['✅ Taux de succès', `${expert.successRate}%`],
-                    ['💼 Expérience', `${expert.experience} ans`],
-                    ['📍 Localisation', expert.location],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between text-xs py-1.5 border-b border-gray-50 last:border-0">
-                      <span className="text-gray-400">{k}</span>
-                      <span className="font-medium text-navy-800">{v}</span>
+                    { Icon: Clock,      label: 'Temps de réponse', val: expert.responseTime },
+                    { Icon: CheckCircle2, label: 'Taux de succès', val: `${expert.successRate}%` },
+                    { Icon: Briefcase,  label: 'Expérience',        val: `${expert.experience} ans` },
+                    { Icon: MapPin,     label: 'Localisation',      val: expert.location },
+                  ].map(({ Icon, label, val }) => (
+                    <div key={label} className="flex justify-between text-xs py-1.5 border-b border-gray-50 last:border-0">
+                      <span className="text-gray-400 flex items-center gap-1"><Icon size={11} /> {label}</span>
+                      <span className="font-medium text-navy-800">{val}</span>
                     </div>
                   ))}
                 </div>
@@ -303,9 +312,11 @@ export default function ContactPage({ params }) {
 
               {/* Security note */}
               <div className="bg-navy-900 rounded-2xl p-4 border border-gold-500/15">
-                <p className="text-xs font-semibold text-gold-400 mb-2">🔒 Messagerie sécurisée</p>
+                <p className="text-xs font-semibold text-gold-400 mb-2 flex items-center gap-1.5">
+                  <Lock size={12} /> Messagerie sécurisée
+                </p>
                 <p className="text-[11px] text-white/50 leading-relaxed">
-                  Tous les échanges sont chiffrés et confidentiels. Votre coordonnées ne seront jamais partagées sans votre accord.
+                  Tous les échanges sont chiffrés et confidentiels. Vos coordonnées ne seront jamais partagées sans votre accord.
                 </p>
               </div>
             </aside>
