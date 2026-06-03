@@ -1,131 +1,24 @@
-// 'use client'
-// import { useState, useEffect } from 'react'
-// import Link from 'next/link'
-// import { usePathname } from 'next/navigation'
-// import { Bell, Menu, X, MessageSquare, Sparkles } from 'lucide-react'
-// import clsx from 'clsx'
-
-// const NAV_LINKS = [
-//   { href: '/',          label: 'Accueil' },
-//   { href: '/search',    label: 'Rechercher' },
-//   { href: '/dashboard', label: 'Tableau de bord' },
-//   { href: '/messages',  label: 'Messagerie' },
-//   { href: '/#pricing',  label: 'Tarifs' },
-// ]
-
-// export default function Navbar() {
-//   const pathname = usePathname()
-//   const [scrolled, setScrolled] = useState(false)
-//   const [mobileOpen, setMobileOpen] = useState(false)
-
-//   useEffect(() => {
-//     const onScroll = () => setScrolled(window.scrollY > 20)
-//     window.addEventListener('scroll', onScroll)
-//     return () => window.removeEventListener('scroll', onScroll)
-//   }, [])
-
-//   return (
-//     <>
-//       <nav className={clsx(
-//         'fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-6 md:px-8',
-//         'bg-navy-900 border-b border-gold-500/15 transition-all duration-300',
-//         scrolled && 'shadow-lg',
-//       )}>
-//         {/* Logo */}
-//         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-//           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center font-display font-bold text-sm text-navy-900 shadow-gold">
-//             A
-//           </div>
-//           <span className="font-display text-lg font-bold text-gold-500">Abakoré</span>
-//         </Link>
-
-//         {/* Desktop nav */}
-//         <div className="hidden md:flex items-center gap-1">
-//           {NAV_LINKS.map(({ href, label }) => (
-//             <Link
-//               key={href}
-//               href={href}
-//               className={clsx(
-//                 'nav-link',
-//                 pathname === href && 'nav-link-active'
-//               )}
-//             >
-//               {label}
-//             </Link>
-//           ))}
-//         </div>
-
-//         {/* Actions */}
-//         <div className="flex items-center gap-2">
-//           <button className="hidden md:flex w-9 h-9 items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.07] transition-all">
-//             <Bell size={16} />
-//           </button>
-//           <Link href="/messages" className="hidden md:flex w-9 h-9 items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.07] transition-all relative">
-//             <MessageSquare size={16} />
-//             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gold-500 rounded-full" />
-//           </Link>
-//           <Link href="/auth/login" className="btn-ghost hidden md:inline-flex">
-//             Connexion
-//           </Link>
-//           <Link href="/auth/register" className="btn-gold btn-sm hidden md:inline-flex items-center gap-1.5">
-//             <Sparkles size={12} /> S'inscrire
-//           </Link>
-//           <button
-//             className="md:hidden w-9 h-9 flex items-center justify-center text-white/70 hover:text-white"
-//             onClick={() => setMobileOpen(!mobileOpen)}
-//           >
-//             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-//           </button>
-//         </div>
-//       </nav>
-
-//       {/* Mobile menu */}
-//       {mobileOpen && (
-//         <div className="fixed inset-0 z-40 bg-navy-900 pt-16 animate-fade-in">
-//           <div className="p-6 flex flex-col gap-2">
-//             {NAV_LINKS.map(({ href, label }) => (
-//               <Link
-//                 key={href}
-//                 href={href}
-//                 onClick={() => setMobileOpen(false)}
-//                 className="text-white/70 text-base font-medium py-3 border-b border-white/[0.07]"
-//               >
-//                 {label}
-//               </Link>
-//             ))}
-//             <div className="mt-6 flex flex-col gap-3">
-//               <Link href="/auth/login" className="btn-outline-gold justify-center">Connexion</Link>
-//               <Link href="/auth/register" className="btn-gold justify-center flex items-center gap-1.5">
-//                 <Sparkles size={14} /> S'inscrire
-//               </Link>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </>
-//   )
-// }
-
-
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Bell, Menu, X, MessageSquare, Sparkles, LogOut, User, Settings, ChevronDown, LayoutDashboard } from 'lucide-react'
 import clsx from 'clsx'
+import logo from '../../assets/logo.jpeg'
 
 // ─── Firebase ────────────────────────────────────────────────────────────────
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { getFirestore, doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
+import Image from 'next/image'
 
 // ─── Nav links ───────────────────────────────────────────────────────────────
 const NAV_LINKS = [
-  { href: '/',          label: 'Accueil' },
-  { href: '/search',    label: 'Rechercher' },
+  { href: '/', label: 'Accueil' },
+  { href: '/search', label: 'Rechercher' },
   { href: '/dashboard', label: 'Tableau de bord' },
-  { href: '/messages',  label: 'Messagerie' },
-  { href: '/#pricing',  label: 'Tarifs' },
+  { href: '/messages', label: 'Messagerie' },
+  { href: '/#pricing', label: 'Tarifs' },
 ]
 
 // ─── Avatar initiales ────────────────────────────────────────────────────────
@@ -165,9 +58,9 @@ function Avatar({ user, profile, size = 8 }) {
 function StatusBadge({ status }) {
   if (!status) return null
   const cfg = {
-    active:  { label: 'Actif',       cls: 'bg-green-500/15 text-green-400' },
-    pending: { label: 'En attente',  cls: 'bg-amber-500/15 text-amber-400' },
-    banned:  { label: 'Suspendu',    cls: 'bg-red-500/15 text-red-400'     },
+    active: { label: 'Actif', cls: 'bg-green-500/15 text-green-400' },
+    pending: { label: 'En attente', cls: 'bg-amber-500/15 text-amber-400' },
+    banned: { label: 'Suspendu', cls: 'bg-red-500/15 text-red-400' },
   }
   const { label, cls } = cfg[status] ?? cfg.pending
   return <span className={clsx('text-[10px] font-semibold px-1.5 py-0.5 rounded-md', cls)}>{label}</span>
@@ -224,9 +117,9 @@ function UserMenu({ user, profile, onLogout }) {
 
           {/* Menu items */}
           <div className="p-1.5">
-            <MenuItem href="/dashboard" icon={LayoutDashboard} label="Tableau de bord"   onClick={() => setOpen(false)} />
-            <MenuItem href="/profile"   icon={User}            label="Mon profil"         onClick={() => setOpen(false)} />
-            <MenuItem href="/settings"  icon={Settings}        label="Paramètres"         onClick={() => setOpen(false)} />
+            <MenuItem href="/dashboard" icon={LayoutDashboard} label="Tableau de bord" onClick={() => setOpen(false)} />
+            <MenuItem href="/profile" icon={User} label="Mon profil" onClick={() => setOpen(false)} />
+            <MenuItem href="/settings" icon={Settings} label="Paramètres" onClick={() => setOpen(false)} />
           </div>
 
           {/* Déconnexion */}
@@ -258,14 +151,14 @@ function MenuItem({ href, icon: Icon, label, onClick }) {
 
 // ─── Composant principal ─────────────────────────────────────────────────────
 export default function Navbar() {
-  const pathname    = usePathname()
-  const router      = useRouter()
-  const [scrolled, setScrolled]     = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Auth state
-  const [authUser, setAuthUser]   = useState(undefined) // undefined = loading, null = non connecté
-  const [profile, setProfile]     = useState(null)
+  const [authUser, setAuthUser] = useState(undefined) // undefined = loading, null = non connecté
+  const [profile, setProfile] = useState(null)
   const [unreadMessages, setUnreadMessages] = useState(false)
 
   // Scroll
@@ -306,7 +199,11 @@ export default function Navbar() {
       )}>
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500 to-gold-600 flex items-center justify-center font-display font-bold text-sm text-navy-900 shadow-gold">A</div>
+          <Image
+            src={logo}
+            alt="logo abakore"
+            className="w-10 h-10 rounded-lg"
+          />
           <span className="font-display text-lg font-bold text-gold-500">Abakoré</span>
         </Link>
 
@@ -409,8 +306,8 @@ export default function Navbar() {
             <div className="mt-6 flex flex-col gap-3">
               {authUser ? (
                 <>
-                  <Link href="/profile"  onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center flex items-center gap-2"><User size={14}/> Mon profil</Link>
-                  <Link href="/settings" onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center flex items-center gap-2"><Settings size={14}/> Paramètres</Link>
+                  <Link href="/profile" onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center flex items-center gap-2"><User size={14} /> Mon profil</Link>
+                  <Link href="/settings" onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center flex items-center gap-2"><Settings size={14} /> Paramètres</Link>
                   <button
                     onClick={() => { setMobileOpen(false); handleLogout() }}
                     className="flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-red-400 border border-red-400/30 rounded-xl hover:bg-red-500/10 transition-all"
@@ -420,7 +317,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/auth/login"    onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center">Connexion</Link>
+                  <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="btn-outline-gold justify-center">Connexion</Link>
                   <Link href="/auth/register" onClick={() => setMobileOpen(false)} className="btn-gold justify-center flex items-center gap-1.5">
                     <Sparkles size={14} /> S'inscrire
                   </Link>

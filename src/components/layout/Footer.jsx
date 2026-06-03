@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Twitter, Linkedin, Facebook } from 'lucide-react'
+import logo from '../../assets/logo.jpeg'
+import Image from 'next/image'
 
 const LINKS = {
   Plateforme: [
@@ -38,7 +40,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           {/* Brand */}
           <div>
-            <div className="font-display text-xl font-bold text-gold-500 mb-3">Abakoré</div>
+             {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+          <Image
+            src={logo}
+            alt="logo abakore"
+            className="w-10 h-10 rounded-lg"
+          />
+          <span className="font-display text-lg font-bold text-gold-500">Abakoré</span>
+        </Link>
             <p className="text-sm text-white/40 leading-relaxed max-w-[240px]">
               La plateforme de référence pour l'expertise juridique, comptable et RH dans l'espace OHADA.
             </p>

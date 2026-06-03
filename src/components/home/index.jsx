@@ -101,10 +101,45 @@ export function HowItWorks() {
 }
 
 // FeaturedExperts.jsx
-import { EXPERTS } from '@/lib/data'
+// components/sections/FeaturedExperts.jsx
+'use client'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { Avatar, Badge, SubBadge, Stars } from '@/components/ui'
+import { useExperts } from '@/lib/useExperts'
 
+/* ── Skeleton card ──────────────────────────────────────── */
+function ExpertCardSkeleton() {
+  return (
+    <div className="card card-gold-accent animate-pulse">
+      <div className="flex gap-4 items-center mb-4">
+        <div className="w-14 h-14 rounded-full bg-gray-100 flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-100 rounded w-3/4" />
+          <div className="h-3 bg-gray-100 rounded w-1/2" />
+          <div className="h-4 bg-gray-100 rounded w-1/3" />
+        </div>
+      </div>
+      <div className="space-y-2 mb-3">
+        <div className="h-3 bg-gray-100 rounded w-full" />
+        <div className="h-3 bg-gray-100 rounded w-5/6" />
+      </div>
+      <div className="flex gap-1.5 mb-4">
+        <div className="h-5 w-16 bg-gray-100 rounded-full" />
+        <div className="h-5 w-20 bg-gray-100 rounded-full" />
+      </div>
+      <div className="flex justify-between items-center pt-3.5 border-t border-gray-100">
+        <div className="h-3 w-24 bg-gray-100 rounded" />
+        <div className="h-4 w-16 bg-gray-100 rounded" />
+      </div>
+    </div>
+  )
+}
+
+/* ── Section ────────────────────────────────────────────── */
 export function FeaturedExperts() {
+  const { experts, loading, error } = useExperts(3)
+
   return (
     <section className="page-section bg-cream">
       <div className="max-w-6xl mx-auto px-6">
@@ -118,8 +153,32 @@ export function FeaturedExperts() {
             <ArrowRight size={16} />
           </Link>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-10 text-sm text-red-400">
+            Impossible de charger les experts. Veuillez réessayer.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {EXPERTS.map(e => (
+          {/* Loading skeletons */}
+          {loading && !error && (
+            <>
+              <ExpertCardSkeleton />
+              <ExpertCardSkeleton />
+              <ExpertCardSkeleton />
+            </>
+          )}
+
+          {/* Expert cards */}
+          {!loading && !error && experts.length === 0 && (
+            <div className="col-span-3 text-center py-10 text-sm text-gray-400">
+              Aucun expert disponible pour le moment.
+            </div>
+          )}
+
+          {!loading && experts.map(e => (
             <Link
               key={e.id}
               href={`/profile/${e.id}`}

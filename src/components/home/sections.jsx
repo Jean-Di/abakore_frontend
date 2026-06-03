@@ -1,13 +1,163 @@
+// components/sections/Homesections.jsx
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 import {
   Scale, Briefcase, Building2, MessageSquare, Lock, Check,
   ShieldCheck, BarChart2, Bot, Star, Sparkles, Minus, ChevronRight,
+  Loader2,
 } from 'lucide-react'
-import { EXPERTS } from '@/lib/data'
 import { PRICING_PLANS } from '@/lib/data'
-import { Avatar, Badge, SubBadge, Stars } from '@/components/ui'
+import { Badge, SubBadge, Stars } from '@/components/ui'
+import {
+  getFirestore, collection, query, where,
+  orderBy, limit, getDocs,
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+
+// ─── Hook : experts depuis Firebase ──────────────────────────────────────────
+function useFeaturedExperts() {
+  const [experts,  setExperts]  = useState([])
+  const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState(null)
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        const q = query(
+          collection(db, 'users'),
+          // where('role',     '==', 'expert'),
+          // where('verified', '==', true),
+          // orderBy('rating', 'desc'),
+          limit(3)
+        )
+        const snap = await getDocs(q)
+        setExperts(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      } catch (e) {
+        console.error(e)
+        setError(e.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
+
+  return { experts, loading, error }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getDisplayName(e) {
+  return `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() || e.email || 'Expert'
+}
+
+function getInitials(e) {
+  const name = getDisplayName(e)
+  return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+}
+
+// ─── Skeleton carte expert ────────────────────────────────────────────────────
+function ExpertCardSkeleton() {
+  return (
+    <div className="card animate-pulse">
+      <div className="flex gap-4 items-center mb-4">
+        <div className="w-14 h-14 rounded-full bg-gray-100 flex-shrink-0" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-100 rounded w-2/3" />
+          <div className="h-3 bg-gray-100 rounded w-1/2" />
+          <div className="h-4 bg-gray-100 rounded w-1/3" />
+        </div>
+      </div>
+      <div className="space-y-2 mb-4">
+        <div className="h-3 bg-gray-100 rounded w-full" />
+        <div className="h-3 bg-gray-100 rounded w-3/4" />
+      </div>
+      <div className="flex gap-1.5 mb-4">
+        <div className="h-5 bg-gray-100 rounded-full w-20" />
+        <div className="h-5 bg-gray-100 rounded-full w-24" />
+      </div>
+      <div className="flex justify-between pt-3.5 border-t border-gray-100">
+        <div className="h-4 bg-gray-100 rounded w-24" />
+        <div className="h-4 bg-gray-100 rounded w-16" />
+      </div>
+    </div>
+  )
+}
+
+// ─── Carte expert ─────────────────────────────────────────────────────────────
+function ExpertCard({ expert }) {
+  const name     = getDisplayName(expert)
+  const initials = getInitials(expert)
+
+  return (
+    <Link
+      href={`/profile/${expert.id}`}
+      className="card card-gold-accent card-hover block"
+    >
+      {/* Avatar + infos */}
+      <div className="flex gap-4 items-center mb-4">
+        <div className="relative flex-shrink-0">
+          {expert.photoURL ? (
+            <img
+              src={expert.photoURL}
+              alt={name}
+              className="w-14 h-14 rounded-full object-cover border-2 border-gold-100"
+            />
+          ) : (
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center font-display text-lg font-bold border-2"
+              style={{ background: 'linear-gradient(135deg, #1F3D67, #2D5990)', color: '#D9BC72', borderColor: '#F2E4BF' }}
+            >
+              {initials}
+            </div>
+          )}
+          {expert.verified && (
+            <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center text-white">
+              <Check size={9} strokeWidth={3} />
+            </span>
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-display text-[15px] font-bold text-navy-900 truncate">{name}</p>
+          <p className="text-xs text-gray-400 mt-0.5 truncate">{expert.speciality ?? expert.role ?? '—'}</p>
+          <div className="mt-1.5"><SubBadge plan={expert.plan} /></div>
+        </div>
+      </div>
+
+      {/* Bio */}
+      {expert.bio && (
+        <p className="text-[13px] text-gray-500 leading-relaxed mb-3 line-clamp-2">{expert.bio}</p>
+      )}
+
+      {/* Domaines */}
+      {(expert.domains ?? []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {(expert.domains ?? []).slice(0, 3).map(d => (
+            <Badge key={d} variant="navy">{d}</Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex justify-between items-center pt-3.5 border-t border-gray-100">
+        <Stars rating={expert.rating ?? 5} reviews={expert.reviews ?? 0} />
+        <div className="text-right">
+          {expert.hourlyRate ? (
+            <>
+              <p className="font-display text-[15px] font-bold text-navy-800">
+                {Number(expert.hourlyRate).toLocaleString()} FCFA
+              </p>
+              <p className="text-[10px] text-gray-400">/ heure</p>
+            </>
+          ) : (
+            <p className="text-xs text-gray-400 italic">Sur demande</p>
+          )}
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 // ─── HowItWorks ──────────────────────────────────────────────────────────────
 export function HowItWorks() {
@@ -19,7 +169,7 @@ export function HowItWorks() {
       extra: (
         <div className="flex flex-wrap gap-1.5 mt-4">
           {[
-            { Icon: Scale,    label: 'Avocat' },
+            { Icon: Scale,     label: 'Avocat' },
             { Icon: BarChart2, label: 'Comptable' },
             { Icon: Building2, label: 'Entreprise' },
           ].map(({ Icon, label }) => (
@@ -43,7 +193,7 @@ export function HowItWorks() {
     {
       n: '3',
       title: 'Exécutez & payez',
-      body: 'Soumettez votre dossier, suivez l\'avancement en temps réel, validez les livrables et effectuez le paiement sécurisé — sans sortir d\'Abakoré.',
+      body: "Soumettez votre dossier, suivez l'avancement en temps réel, validez les livrables et effectuez le paiement sécurisé — sans sortir d'Abakoré.",
       extra: (
         <div className="flex gap-2 mt-4 flex-wrap">
           <span className="badge-navy inline-flex items-center gap-1"><Lock size={11} /> Paiement sécurisé</span>
@@ -85,6 +235,8 @@ export function HowItWorks() {
 
 // ─── FeaturedExperts ──────────────────────────────────────────────────────────
 export function FeaturedExperts() {
+  const { experts, loading, error } = useFeaturedExperts()
+
   return (
     <section className="page-section bg-cream">
       <div className="max-w-6xl mx-auto px-6">
@@ -97,34 +249,30 @@ export function FeaturedExperts() {
             Voir tous les experts <ChevronRight size={14} />
           </Link>
         </div>
+
+        {/* Erreur */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-6">
+            Impossible de charger les experts. Veuillez réessayer.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {EXPERTS.map(e => (
-            <Link
-              key={e.id}
-              href={`/profile/${e.id}`}
-              className="card card-gold-accent card-hover block"
-            >
-              <div className="flex gap-4 items-center mb-4">
-                <Avatar initials={e.initials} size="lg" verified={e.verified} />
-                <div>
-                  <div className="font-display text-[15px] font-bold text-navy-900">{e.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{e.role}</div>
-                  <div className="mt-1.5"><SubBadge plan={e.plan} /></div>
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => <ExpertCardSkeleton key={i} />)
+            : experts.length === 0
+              ? (
+                /* Fallback si aucun expert vérifié */
+                <div className="col-span-3 text-center py-12 text-gray-400">
+                  <p className="font-semibold text-navy-700 mb-1">Aucun expert disponible pour le moment</p>
+                  <p className="text-sm">Revenez bientôt ou parcourez tous les profils</p>
+                  <Link href="/search" className="btn-gold btn-sm mt-4 inline-flex">
+                    Parcourir les experts
+                  </Link>
                 </div>
-              </div>
-              <p className="text-[13px] text-gray-500 leading-relaxed mb-3 line-clamp-2">{e.bio}</p>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {e.domains.map(d => <Badge key={d} variant="navy">{d}</Badge>)}
-              </div>
-              <div className="flex justify-between items-center pt-3.5 border-t border-gray-100">
-                <Stars rating={e.rating} reviews={e.reviews} />
-                <div className="text-right">
-                  <div className="font-display text-[15px] font-bold text-navy-800">{e.rate}</div>
-                  <div className="text-[10px] text-gray-400">{e.ratePeriod}</div>
-                </div>
-              </div>
-            </Link>
-          ))}
+              )
+              : experts.map(e => <ExpertCard key={e.id} expert={e} />)
+          }
         </div>
       </div>
     </section>
@@ -134,17 +282,16 @@ export function FeaturedExperts() {
 // ─── FeaturesSection ──────────────────────────────────────────────────────────
 export function FeaturesSection() {
   const features = [
-    { Icon: Bot,        title: 'Base OHADA intégrée & IA',          body: 'Posez vos questions juridiques en langage naturel. L\'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources.' },
-    { Icon: Lock,       title: 'Paiement & escrow sécurisés',        body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
-    { Icon: ShieldCheck, title: 'Vérification des profils',          body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
-    { Icon: BarChart2,  title: 'Suivi de dossiers en temps réel',    body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
+    { Icon: Bot,         title: 'Base OHADA intégrée & IA',        body: "Posez vos questions juridiques en langage naturel. L'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources." },
+    { Icon: Lock,        title: 'Paiement & escrow sécurisés',      body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
+    { Icon: ShieldCheck, title: 'Vérification des profils',         body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
+    { Icon: BarChart2,   title: 'Suivi de dossiers en temps réel',  body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
   ]
 
   return (
     <section className="page-section bg-white">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Feature list */}
           <div>
             <p className="sec-label">Fonctionnalités</p>
             <h2 className="sec-title">Tout ce qu'il faut,<br />nulle part ailleurs</h2>
@@ -211,14 +358,14 @@ export function PricingSection() {
               key={plan.name}
               className={clsx(
                 'rounded-3xl p-6 relative transition-all duration-200 hover:-translate-y-0.5',
-                plan.featured
-                  ? 'bg-navy-900 border-[1.5px] border-gold-600'
-                  : plan.spotlight
-                  ? 'border border-purple-500/40'
-                  : 'bg-white border border-gray-100',
+                plan.featured  ? 'bg-navy-900 border-[1.5px] border-gold-600' :
+                plan.spotlight ? 'border border-purple-500/40'                :
+                                 'bg-white border border-gray-100',
               )}
               style={{
-                boxShadow: plan.featured ? 'var(--shadow-gold), var(--shadow-md)' : plan.spotlight ? '0 4px 20px rgba(124,58,237,0.15)' : 'var(--shadow-sm)',
+                boxShadow:  plan.featured  ? 'var(--shadow-gold), var(--shadow-md)' :
+                            plan.spotlight ? '0 4px 20px rgba(124,58,237,0.15)'     :
+                                             'var(--shadow-sm)',
                 background: plan.spotlight ? 'linear-gradient(160deg, #1E1B4B, #2D1F6E)' : undefined,
               }}
             >
@@ -227,22 +374,27 @@ export function PricingSection() {
                   <Star size={10} fill="currentColor" /> Populaire
                 </span>
               )}
-              <p className={clsx('text-[11px] font-bold tracking-widest uppercase mb-2.5', plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-300/70' : 'text-gray-300')}>
+              <p className={clsx('text-[11px] font-bold tracking-widest uppercase mb-2.5',
+                plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-300/70' : 'text-gray-300')}>
                 {plan.name}
               </p>
-              <p className={clsx('font-display text-4xl font-bold leading-none', plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-200' : 'text-navy-900')}>
+              <p className={clsx('font-display text-4xl font-bold leading-none',
+                plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-200' : 'text-navy-900')}>
                 {plan.price}
               </p>
-              <p className={clsx('text-xs mt-1 mb-5', plan.featured ? 'text-white/40' : plan.spotlight ? 'text-purple-300/40' : 'text-gray-400')}>
+              <p className={clsx('text-xs mt-1 mb-5',
+                plan.featured ? 'text-white/40' : plan.spotlight ? 'text-purple-300/40' : 'text-gray-400')}>
                 {plan.period}
               </p>
               <ul className="space-y-0.5 mb-6">
                 {plan.features.map(({ ok, text }) => (
-                  <li key={text} className={clsx('flex items-start gap-2 py-1.5 text-[13px] border-b last:border-0', plan.featured ? 'border-white/[0.07] text-white/70' : plan.spotlight ? 'border-purple-500/15 text-purple-200/75' : 'border-gray-50 text-gray-500')}>
+                  <li key={text} className={clsx('flex items-start gap-2 py-1.5 text-[13px] border-b last:border-0',
+                    plan.featured  ? 'border-white/[0.07] text-white/70'       :
+                    plan.spotlight ? 'border-purple-500/15 text-purple-200/75' :
+                                     'border-gray-50 text-gray-500')}>
                     {ok
                       ? <Check size={13} strokeWidth={2.5} className={plan.spotlight ? 'text-purple-400 flex-shrink-0 mt-0.5' : 'text-gold-500 flex-shrink-0 mt-0.5'} />
-                      : <Minus size={13} className="text-gray-300 flex-shrink-0 mt-0.5" />
-                    }
+                      : <Minus size={13} className="text-gray-300 flex-shrink-0 mt-0.5" />}
                     {text}
                   </li>
                 ))}
@@ -258,7 +410,7 @@ export function PricingSection() {
                 )}
                 style={plan.ctaStyle === 'spotlight' ? { background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' } : undefined}
               >
-                {plan.ctaStyle === 'gold' && <Sparkles size={13} />}
+                {plan.ctaStyle === 'gold'      && <Sparkles size={13} />}
                 {plan.ctaStyle === 'spotlight' && <Star size={13} />}
                 {plan.cta}
               </Link>
