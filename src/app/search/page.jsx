@@ -272,9 +272,9 @@ console.log("activeType", activeType)
       </div>
 
       <div className="mb-5">
-        <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-gray-400 mb-3">Abonnement</p>
-        {['Premium', 'Spotlight', 'Tous'].map(p => (
-          <label key={p} className="flex items-center gap-2.5 py-1.5 cursor-pointer text-sm text-gray-600">
+        <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-gray-400 mb-3">Profil</p>
+        {['Profils vedettes', 'Disponibles maintenant'].map(p => (
+          <label key={p} className="flex items-center gap-2.5 py-1.5 cursor-pointer text-sm text-gray-600 hover:text-navy-800 transition-colors">
             <input type="checkbox" className="accent-gold-500" /> {p}
           </label>
         ))}

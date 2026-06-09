@@ -9,7 +9,7 @@ export interface UserData {
   uid:        string
   name:       string
   initials:   string
-  plan:       'free' | 'pro' | 'premium'
+  plan:       'starter' | 'growth' | 'business' | 'enterprise' | 'featured' | 'verified'
   avatarUrl?: string
 }
 
@@ -95,7 +95,7 @@ export function useDashboardData(): DashboardData {
             uid:      firebaseUser.uid,
             name:     fullName,
             initials: d.initials ?? getInitials(fullName),
-            plan:     d.plan     ?? 'free',
+            plan:     d.plan     ?? 'starter',
             avatarUrl: d.photoURL ?? d.avatarUrl,
           })
 
@@ -106,7 +106,7 @@ export function useDashboardData(): DashboardData {
             const k = kpiSnap.data()
             setKpis({
               totalDossiers: k.totalDossiers ?? 0,
-              revenueMonth:  k.revenueMonth  ?? '0 FCFA',
+              revenueMonth:  k.revenueMonth  ?? '0 XOF',
               avgRating:     k.avgRating     ?? 0,
               profileViews:  k.profileViews  ?? 0,
               revenueChange: k.revenueChange ?? '+0%',
@@ -129,7 +129,7 @@ export function useDashboardData(): DashboardData {
             uid:      firebaseUser.uid,
             name:     firebaseUser.displayName ?? firebaseUser.email ?? 'Utilisateur',
             initials: getInitials(firebaseUser.displayName ?? firebaseUser.email ?? 'U'),
-            plan:     'free',
+            plan:     'starter',
           })
         }
 

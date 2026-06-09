@@ -520,7 +520,7 @@ export default function ContactPage({ params }) {
                         <label className="label">Budget estimé (optionnel)</label>
                         <input
                           className="input"
-                          placeholder="Ex: 150 000 FCFA"
+                          placeholder="Ex: 150 000 XOF"
                           value={budget}
                           onChange={e => setBudget(e.target.value)}
                         />
@@ -729,9 +729,9 @@ export default function ContactPage({ params }) {
                   <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl p-3">
                     <p className="text-xs font-semibold text-gold-700 mb-0.5">Tarif consultation</p>
                     <p className="font-display text-lg font-bold text-navy-800">
-                      {Number(expert.hourlyRate).toLocaleString()} FCFA
+                      {Number(expert.hourlyRate).toLocaleString()} XOF
                     </p>
-                    <p className="text-[10px] text-gray-400">par heure</p>
+                    <p className="text-xs text-gray-500">par heure</p>
                   </div>
                 )}
 

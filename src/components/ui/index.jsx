@@ -46,20 +46,26 @@ export function Badge({ children, variant = 'navy', className }) {
 /* ── SUB BADGE ──────────────────────────────────────────────────────────── */
 export function SubBadge({ plan }) {
   const plans = {
-    free:       { cls: 'sub-free',      label: 'Free',       Icon: null },
-    pro:        { cls: 'sub-pro',       label: 'Pro',        Icon: Hexagon },
-    premium:    { cls: 'sub-premium',   label: 'Premium',    Icon: Sparkles },
-    spotlight:  { cls: 'sub-spotlight', label: 'Spotlight',  Icon: Star },
+    // Plans SaaS entreprise
+    starter:    { cls: 'sub-free',      label: 'Starter',    Icon: null },
+    growth:     { cls: 'sub-pro',       label: 'Growth',     Icon: Hexagon },
+    business:   { cls: 'sub-premium',   label: 'Business',   Icon: Sparkles },
     enterprise: { cls: 'bg-navy-900 text-gold-400 border border-gold-500/30 px-3 py-0.5 rounded-full text-[11px] font-bold', label: 'Enterprise', Icon: Gem },
+    // Niveaux marketplace experts
+    featured:   { cls: 'sub-spotlight', label: 'Vedette',    Icon: Star },
+    verified:   { cls: 'sub-pro',       label: 'Vérifié',    Icon: Sparkles },
   }
-  const { cls, label, Icon } = plans[plan] || plans.free
+  const cfg = plans[plan] ?? { cls: 'sub-free', label: plan ?? 'Starter', Icon: null }
   return (
-    <span className={clsx(cls, 'inline-flex items-center gap-1')}>
-      {Icon && <Icon size={10} />}
-      {label}
+    <span className={clsx(cfg.cls, 'inline-flex items-center gap-1')}>
+      {cfg.Icon && <cfg.Icon size={10} />}
+      {cfg.label}
     </span>
   )
 }
+
+/* ── FEATURE CHECK ──────────────────────────────────────────────────────── */
+// (kept for backward compat — moved from bottom)
 
 /* ── STARS ──────────────────────────────────────────────────────────────── */
 export function Stars({ rating, reviews }) {
@@ -154,7 +160,7 @@ export function ProgressBar({ value, className }) {
 }
 
 /* ── FEATURE CHECK ──────────────────────────────────────────────────────── */
-export function FeatureCheck({ ok, spotlight }) {
-  if (ok) return <Check size={13} className={spotlight ? 'text-purple-400' : 'text-gold-500'} strokeWidth={2.5} />
+export function FeatureCheck({ ok, featured }) {
+  if (ok) return <Check size={13} className={featured ? 'text-purple-400' : 'text-gold-500'} strokeWidth={2.5} />
   return <Minus size={13} className="text-gray-300" />
 }

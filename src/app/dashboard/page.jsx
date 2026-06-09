@@ -1,12 +1,13 @@
-// app/dashboard/page.jsx
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import { SubBadge, StatusBadge, ProgressBar } from '@/components/ui'
 import { useDashboardData } from '@/lib/useDashboardData'
-import { getFirestore, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
-import { getAuth, signOut } from 'firebase/auth'
+import { useCompanyDashboard } from '@/lib/useCompanyDashboard'
+import { signOut, onAuthStateChanged } from 'firebase/auth'
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import clsx from 'clsx'
 import {
@@ -16,23 +17,489 @@ import {
   Check, X, Clock, AlertTriangle, CheckCircle2, Filter,
   ArrowUpDown, Loader2, FileText, Send, MapPin, Calendar,
   DollarSign, Shield, MoreHorizontal, RefreshCw,
+  ShieldCheck, Bell, Gavel, BookOpen, Building2, Sparkles,
+  AlertCircle, TrendingUp as Trending, Activity,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
-
-/* ── Constantes ─────────────────────────────────────────── */
-const QUICK_ACTIONS = [
-  { Icon: Search,        label: 'Trouver un expert', href: '/search' },
-  { Icon: MessageSquare, label: 'Messagerie',        href: '/messages' },
-  { Icon: Scale,         label: 'OHADA IA',          href: '/ohada-ia' },
-  { Icon: BarChart2,     label: 'Mes statistiques',  href: '#' },
-]
+/* ══════════════════════════════════════════════════════════════
+   COMPOSANTS PARTAGÉS
+══════════════════════════════════════════════════════════════ */
+function Skeleton({ className }) {
+  return <div className={clsx('animate-pulse bg-gray-100 rounded-lg', className)} />
+}
 
 const DOT_COLORS = {
   gold:  'bg-gold-500',
   green: 'bg-green-500',
   navy:  'bg-navy-400',
+  red:   'bg-red-500',
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD ENTREPRISE
+══════════════════════════════════════════════════════════════ */
+
+// ── Jauge de conformité (SVG arc) ────────────────────────────
+function ConformityGauge({ score, loading }) {
+  if (loading) return <Skeleton className="h-[180px] w-full rounded-2xl" />
+
+  const pct    = score ?? 0
+  const color  = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444'
+  const label  = pct >= 80 ? 'Conforme' : pct >= 50 ? 'À améliorer' : 'Critique'
+
+  // Arc SVG : demi-cercle de 180° → cx=100,cy=100,r=80
+  const R       = 80
+  const cx      = 100
+  const cy      = 100
+  const total   = Math.PI * R               // longueur demi-cercle
+  const filled  = (pct / 100) * total
+  const gap     = total - filled
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center" style={{ boxShadow: 'var(--shadow-sm)' }}>
+      <p className="text-[11px] font-bold tracking-widest uppercase text-gray-300 mb-3">Score de conformité</p>
+      <div className="relative w-[160px] h-[90px] overflow-hidden">
+        <svg viewBox="0 0 200 105" className="w-full">
+          {/* Fond */}
+          <path
+            d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+            fill="none" stroke="#f3f4f6" strokeWidth="18" strokeLinecap="round"
+          />
+          {/* Rempli */}
+          <path
+            d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
+            fill="none"
+            stroke={color}
+            strokeWidth="18"
+            strokeLinecap="round"
+            strokeDasharray={`${filled} ${gap}`}
+            style={{ transition: 'stroke-dasharray 0.8s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-1">
+          <p className="font-display text-3xl font-bold" style={{ color }}>{score !== null ? `${pct}` : '—'}</p>
+          <p className="text-[11px] font-semibold text-gray-400">{score !== null ? '/100' : 'Aucun indicateur'}</p>
+        </div>
+      </div>
+      <span className="mt-2 text-[12px] font-bold px-3 py-1 rounded-full"
+        style={{ background: `${color}18`, color }}>
+        {score !== null ? label : 'À configurer'}
+      </span>
+    </div>
+  )
+}
+
+// ── Carte KPI conformité ──────────────────────────────────────
+function ComplianceKpiCard({ icon: Icon, value, label, sub, color, loading }) {
+  if (loading) return <Skeleton className="h-[100px] rounded-2xl" />
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4" style={{ boxShadow: 'var(--shadow-sm)' }}>
+      <div className={clsx('w-8 h-8 rounded-xl flex items-center justify-center mb-2', color.bg)}>
+        <Icon size={16} className={color.text} />
+      </div>
+      <p className="font-display text-2xl font-bold text-navy-900">{value}</p>
+      <p className="text-[11px] text-gray-400 mt-0.5">{label}</p>
+      {sub && <p className={clsx('text-[11px] font-semibold mt-1', color.text)}>{sub}</p>}
+    </div>
+  )
+}
+
+// ── Badge statut KPI ─────────────────────────────────────────
+const KPI_STATUS = {
+  compliant: { label: 'Conforme',  bg: 'bg-green-50  border-green-200',  text: 'text-green-700',  Icon: CheckCircle2 },
+  late:      { label: 'En retard', bg: 'bg-red-50    border-red-200',    text: 'text-red-700',    Icon: AlertTriangle },
+  upcoming:  { label: 'À venir',   bg: 'bg-amber-50  border-amber-200',  text: 'text-amber-700',  Icon: Clock },
+  pending:   { label: 'À valider', bg: 'bg-blue-50   border-blue-200',   text: 'text-blue-700',   Icon: Clock },
+}
+
+function KpiStatusBadge({ status }) {
+  const cfg = KPI_STATUS[status] ?? KPI_STATUS.pending
+  return (
+    <span className={clsx('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border', cfg.bg, cfg.text)}>
+      <cfg.Icon size={10} /> {cfg.label}
+    </span>
+  )
+}
+
+// ── Criticité (étoiles) ───────────────────────────────────────
+function Criticality({ value = 1 }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(n => (
+        <Star key={n} size={9} className={n <= value ? 'text-gold-500 fill-gold-500' : 'text-gray-200 fill-gray-200'} />
+      ))}
+    </div>
+  )
+}
+
+// ── Empty state ───────────────────────────────────────────────
+function EmptyState({ icon: Icon, title, desc, cta, ctaHref }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-gray-200 rounded-2xl bg-white">
+      <Icon size={32} className="text-gray-200 mb-3" />
+      <p className="font-semibold text-navy-700 text-sm mb-1">{title}</p>
+      <p className="text-xs text-gray-400 mb-4 max-w-[220px]">{desc}</p>
+      {cta && (
+        <Link href={ctaHref ?? '#'} className="btn-gold btn-sm inline-flex items-center gap-1.5">
+          {cta}
+        </Link>
+      )}
+    </div>
+  )
+}
+
+// ── Dashboard Entreprise ──────────────────────────────────────
+function EnterpriseDashboard() {
+  const router = useRouter()
+  const { user, complianceKpis, score, workflowItems, alerts, notifications, loading, error, stats, urgentKpis } = useCompanyDashboard()
+  const [activeKey, setActiveKey] = useState('dash')
+
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
+
+  async function handleLogout() {
+    await signOut(auth)
+    router.push('/')
+  }
+
+  const SIDEBAR_ITEMS = [
+    { Icon: Home,         label: 'Tableau de bord',   href: '/dashboard',        key: 'dash' },
+    { Icon: ShieldCheck,  label: 'Conformité',         href: '/conformite',       key: 'conformite',  badge: stats.lateCount || null },
+    { Icon: Gavel,        label: 'Workflow juridique', href: '/workflow',          key: 'workflow',    badge: stats.workflowPendingCount || null },
+    { Icon: BookOpen,     label: 'Veille juridique',   href: '/veille',            key: 'veille' },
+    { Icon: Bell,         label: 'Alertes',            href: '/alertes',           key: 'alertes',     badge: stats.unreadAlerts || null },
+    { Icon: FolderOpen,   label: 'Documents',          href: '/documents',         key: 'docs' },
+    { Icon: Scale,        label: 'OHADA IA',           href: '/ohada-ia',          key: 'ia' },
+    { Icon: Search,       label: 'Legal Marketplace',  href: '/marketplace',       key: 'marketplace' },
+    { Icon: MessageSquare, label: 'Messagerie',        href: '/messages',          key: 'messages',    badge: stats.unreadNotifs || null },
+    { Icon: CreditCard,   label: 'Abonnement',         href: '#',                  key: 'sub' },
+    { Icon: Settings,     label: 'Paramètres',         href: '#',                  key: 'settings' },
+  ]
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 font-semibold mb-2">Erreur de chargement</p>
+          <p className="text-sm text-gray-400">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 pt-16 flex">
+
+        {/* ── Sidebar ──────────────────────────────────────────────── */}
+        <aside className="hidden md:flex flex-col w-[240px] flex-shrink-0 bg-white border-r border-gray-100 fixed top-16 bottom-0 overflow-y-auto">
+          <div className="p-4">
+            {loading ? (
+              <Skeleton className="h-[60px] w-full rounded-xl" />
+            ) : (
+              <div className="flex items-center gap-2.5 p-3 bg-gold-50 border border-gold-200 rounded-xl">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center font-display text-sm font-bold flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #1F3D67, #2D5990)', color: '#D9BC72', border: '2px solid #F2E4BF' }}>
+                  {user?.initials ?? '?'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-navy-800 truncate">{user?.company || user?.name}</p>
+                  <p className="text-[11px] text-gray-500 truncate capitalize">{user?.plan}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <nav className="px-3 pb-4">
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 px-3 py-2">Principal</p>
+            {SIDEBAR_ITEMS.slice(0, 2).map(({ Icon, label, href, key, badge }) => (
+              <Link key={key} href={href}
+                onClick={() => setActiveKey(key)}
+                className={clsx(
+                  'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 transition-all',
+                  activeKey === key ? 'bg-gold-50 text-gold-700' : 'text-gray-500 hover:bg-gray-50 hover:text-navy-800'
+                )}>
+                <Icon size={16} className="flex-shrink-0" />
+                <span className="flex-1">{label}</span>
+                {badge ? <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full">{badge}</span> : null}
+              </Link>
+            ))}
+
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 px-3 py-2 mt-2">Modules</p>
+            {SIDEBAR_ITEMS.slice(2, 9).map(({ Icon, label, href, key, badge }) => (
+              <Link key={key} href={href}
+                onClick={() => setActiveKey(key)}
+                className={clsx(
+                  'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 transition-all',
+                  activeKey === key ? 'bg-gold-50 text-gold-700' : 'text-gray-500 hover:bg-gray-50 hover:text-navy-800'
+                )}>
+                <Icon size={16} className="flex-shrink-0" />
+                <span className="flex-1">{label}</span>
+                {badge ? <span className="text-[10px] font-bold bg-gold-500 text-navy-900 px-1.5 py-0.5 rounded-full">{badge}</span> : null}
+              </Link>
+            ))}
+
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 px-3 py-2 mt-2">Compte</p>
+            {SIDEBAR_ITEMS.slice(9).map(({ Icon, label, href, key }) => (
+              <Link key={key} href={href}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 text-gray-500 hover:bg-gray-50 hover:text-navy-800 transition-all">
+                <Icon size={16} className="flex-shrink-0" />
+                {label}
+              </Link>
+            ))}
+
+            <button onClick={handleLogout}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all w-full mt-1">
+              <LogOut size={16} className="flex-shrink-0" />
+              Déconnexion
+            </button>
+          </nav>
+        </aside>
+
+        {/* ── Contenu principal ─────────────────────────────────────── */}
+        <main className="flex-1 md:ml-[240px] p-6 md:p-8">
+
+          {/* Greeting */}
+          {loading ? (
+            <><Skeleton className="h-8 w-56 mb-2" /><Skeleton className="h-4 w-72 mb-6" /></>
+          ) : (
+            <>
+              <h1 className="font-display text-2xl font-bold text-navy-900">
+                Bonjour, {user?.name?.split(' ')[0] ?? 'vous'}
+              </h1>
+              <p className="text-sm text-gray-400 mb-6 mt-1 flex items-center gap-3 flex-wrap">
+                <span>{capitalize(today)}</span>
+                {stats.lateCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-red-600 font-semibold text-xs">
+                    <AlertTriangle size={12} /> {stats.lateCount} obligation{stats.lateCount > 1 ? 's' : ''} en retard
+                  </span>
+                )}
+                {stats.workflowPendingCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-amber-600 font-semibold text-xs">
+                    <Clock size={12} /> {stats.workflowPendingCount} dossier{stats.workflowPendingCount > 1 ? 's' : ''} en attente
+                  </span>
+                )}
+              </p>
+            </>
+          )}
+
+          {/* ── Ligne 1 : Jauge + 4 KPIs ──────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4 mb-6">
+            <ConformityGauge score={score} loading={loading} />
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <ComplianceKpiCard loading={loading} icon={Activity}      value={stats.totalKpis}     label="Indicateurs total"   sub={stats.totalKpis === 0 ? 'À créer' : null}   color={{ bg: 'bg-navy-50',   text: 'text-navy-600' }} />
+              <ComplianceKpiCard loading={loading} icon={CheckCircle2}  value={stats.compliantCount} label="Conformes"            sub={stats.totalKpis > 0 ? `${Math.round((stats.compliantCount / stats.totalKpis) * 100)}%` : null} color={{ bg: 'bg-green-50',  text: 'text-green-600' }} />
+              <ComplianceKpiCard loading={loading} icon={AlertTriangle} value={stats.lateCount}      label="En retard"            sub={stats.lateCount > 0 ? 'Action requise' : 'Aucun'}  color={{ bg: 'bg-red-50',    text: 'text-red-600' }} />
+              <ComplianceKpiCard loading={loading} icon={Clock}         value={stats.upcomingCount}  label="Échéances à venir"    sub="30 prochains jours"                                color={{ bg: 'bg-amber-50',  text: 'text-amber-600' }} />
+            </div>
+          </div>
+
+          {/* ── Ligne 2 : Indicateurs + Panneau droit ──────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
+
+            {/* ── Indicateurs urgents ─────────────────────────── */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-base font-semibold text-navy-800">Indicateurs à traiter</h2>
+                <Link href="/conformite" className="text-xs font-semibold text-gold-600 hover:text-gold-700 flex items-center gap-0.5">
+                  Voir tout ({stats.totalKpis}) <ChevronRight size={13} />
+                </Link>
+              </div>
+
+              {loading ? (
+                <div className="flex flex-col gap-3">
+                  {[1,2,3].map(i => <Skeleton key={i} className="h-[80px] rounded-2xl" />)}
+                </div>
+              ) : urgentKpis.length === 0 ? (
+                score === null ? (
+                  <EmptyState
+                    icon={ShieldCheck}
+                    title="Aucun indicateur configuré"
+                    desc="Ajoutez vos premières obligations légales pour suivre la conformité de votre entreprise."
+                    cta="+ Ajouter un indicateur"
+                    ctaHref="/conformite"
+                  />
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 size={24} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-800">Tout est en ordre</p>
+                      <p className="text-sm text-green-600 mt-0.5">Aucune obligation en retard ni échéance imminente.</p>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {urgentKpis.map(kpi => (
+                    <div key={kpi.id}
+                      className="bg-white border border-gray-100 rounded-2xl p-4 hover:border-gold-300 hover:shadow-sm transition-all cursor-pointer"
+                      style={{ boxShadow: 'var(--shadow-sm)' }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                            <KpiStatusBadge status={kpi.status} />
+                            <Criticality value={kpi.criticality ?? 1} />
+                          </div>
+                          <p className="text-sm font-semibold text-navy-800 truncate">{kpi.title}</p>
+                          {kpi.dueDate && (
+                            <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                              <Calendar size={10} /> Échéance : {kpi.dueDate}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                          {kpi.status === 'late' && (
+                            <Link href="/marketplace"
+                              className="text-[11px] font-semibold text-gold-600 hover:text-gold-700 whitespace-nowrap flex items-center gap-1">
+                              Trouver un expert <ChevronRight size={11} />
+                            </Link>
+                          )}
+                          <Link href="/conformite"
+                            className="text-[11px] text-gray-400 hover:text-navy-800 transition-colors">
+                            Voir détail →
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Link href="/conformite" className="btn-outline btn-sm w-fit inline-flex items-center gap-1.5">
+                    + Gérer la conformité
+                  </Link>
+                </div>
+              )}
+
+              {/* ── Actions rapides ─────────────────────────────── */}
+              <div className="mt-6">
+                <h2 className="font-display text-base font-semibold text-navy-800 mb-4">Actions rapides</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { Icon: Scale,       label: 'Consultation IA',   href: '/ohada-ia',    color: 'text-gold-600' },
+                    { Icon: Gavel,       label: 'Nouveau dossier',   href: '/workflow',    color: 'text-navy-600' },
+                    { Icon: BookOpen,    label: 'Veille juridique',  href: '/veille',      color: 'text-blue-600' },
+                    { Icon: FolderOpen,  label: 'Mes documents',     href: '/documents',   color: 'text-green-600' },
+                  ].map(({ Icon, label, href, color }) => (
+                    <Link key={label} href={href}
+                      className="bg-white border border-gray-100 rounded-xl p-4 text-center hover:border-gold-300 hover:shadow-sm transition-all group"
+                      style={{ boxShadow: 'var(--shadow-sm)' }}>
+                      <div className="flex justify-center mb-2">
+                        <Icon size={22} className={clsx(color, 'group-hover:scale-110 transition-transform')} />
+                      </div>
+                      <p className="text-xs font-medium text-gray-600 group-hover:text-navy-800">{label}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Panneau droit : Alertes + Workflow + Abonnement ─ */}
+            <div className="flex flex-col gap-4">
+
+              {/* Alertes */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-display text-base font-semibold text-navy-800">Alertes</h2>
+                  {stats.unreadAlerts > 0 && (
+                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                      {stats.unreadAlerts} non lue{stats.unreadAlerts > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
+                  {loading ? (
+                    [1,2].map(i => (
+                      <div key={i} className="flex gap-3 p-4 border-b border-gray-50 last:border-0">
+                        <Skeleton className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5"><Skeleton className="h-3.5 w-full" /><Skeleton className="h-3 w-20" /></div>
+                      </div>
+                    ))
+                  ) : alerts.length === 0 ? (
+                    <div className="p-5 text-center text-sm text-gray-400">
+                      <Bell size={20} className="mx-auto mb-2 opacity-30" />
+                      Aucune alerte en attente
+                    </div>
+                  ) : alerts.slice(0, 4).map(alert => (
+                    <div key={alert.id} className="flex gap-3 p-4 border-b border-gray-50 last:border-0 bg-red-50/40">
+                      <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-1.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-700 leading-snug">{alert.text ?? alert.title}</p>
+                        <p className="text-xs text-gray-300 mt-1">{alert.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Workflow en attente */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-display text-base font-semibold text-navy-800">Workflow</h2>
+                  {stats.workflowPendingCount > 0 && (
+                    <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      {stats.workflowPendingCount} en attente
+                    </span>
+                  )}
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
+                  {loading ? (
+                    <div className="p-4"><Skeleton className="h-16 w-full" /></div>
+                  ) : workflowItems.length === 0 ? (
+                    <div className="p-5 text-center text-sm text-gray-400">
+                      <Gavel size={20} className="mx-auto mb-2 opacity-30" />
+                      Aucun dossier en attente
+                    </div>
+                  ) : workflowItems.slice(0, 3).map(item => (
+                    <div key={item.id} className="flex items-center gap-3 p-4 border-b border-gray-50 last:border-0">
+                      <div className="w-1.5 h-8 rounded-full bg-amber-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-navy-800 truncate">{item.title}</p>
+                        <p className="text-[11px] text-gray-400 capitalize">{item.status === 'revision' ? 'Correction demandée' : 'En attente de révision'}</p>
+                      </div>
+                      <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
+                    </div>
+                  ))}
+                </div>
+                <Link href="/workflow" className="btn-outline btn-sm w-full justify-center mt-2 inline-flex">
+                  Voir le workflow
+                </Link>
+              </div>
+
+              {/* Abonnement */}
+              <div className="rounded-2xl p-4 border border-gold-500/20" style={{ background: 'linear-gradient(135deg, #152B47, #1F3D67)' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold tracking-widest uppercase text-gold-400">Abonnement</p>
+                  <span className="text-xs font-bold text-gold-400 capitalize">{user?.plan ?? '—'}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {[
+                    [String(stats.totalKpis),   'Indicateurs'],
+                    [String(stats.compliantCount), 'Conformes'],
+                    [`${score ?? '—'}%`,            'Score'],
+                  ].map(([v, l]) => (
+                    <div key={l} className="text-center bg-white/[0.06] rounded-lg py-2">
+                      <p className="font-display text-sm font-bold text-gold-400">{v}</p>
+                      <p className="text-xs text-white/70 mt-0.5">{l}</p>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full py-2 rounded-xl border border-gold-500/30 text-gold-400 text-xs font-semibold hover:bg-gold-500/10 transition-all">
+                  Gérer l'abonnement
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD EXPERT (refactorisé depuis l'ancien dashboard)
+══════════════════════════════════════════════════════════════ */
 
 const STATUS_CONFIG = {
   pending:   { label: 'En attente',  color: 'text-amber-600',  bg: 'bg-amber-50  border-amber-200',  Icon: Clock },
@@ -42,29 +509,6 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Annulé',      color: 'text-gray-500',   bg: 'bg-gray-50   border-gray-200',   Icon: X },
 }
 
-const PRIORITY_CONFIG = {
-  normal: { label: 'Normale', color: 'text-gray-500',   dot: 'bg-gray-400' },
-  high:   { label: 'Haute',   color: 'text-orange-500', dot: 'bg-orange-400' },
-  urgent: { label: 'Urgente', color: 'text-red-500',    dot: 'bg-red-500' },
-}
-
-const TYPE_LABELS = {
-  contract:      'Contrat',
-  restructuring: 'Restructuration',
-  litigation:    'Litige',
-  compliance:    'Conformité',
-  creation:      'Création',
-  hr:            'RH',
-  banking:       'Bancaire',
-  other:         'Autre',
-}
-
-/* ── Skeleton ───────────────────────────────────────────── */
-function Skeleton({ className }) {
-  return <div className={clsx('animate-pulse bg-gray-100 rounded-lg', className)} />
-}
-
-/* ── Badge statut inline ─────────────────────────────────── */
 function StatusPill({ status }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
   return (
@@ -74,403 +518,14 @@ function StatusPill({ status }) {
   )
 }
 
-/* ── Modal détail dossier ────────────────────────────────── */
-function DossierModal({ dossier, onClose, currentUserUid, onStatusChange }) {
-  const [updating, setUpdating] = useState(false)
-  const [note, setNote]         = useState('')
-  const isExpert  = dossier.expertId  === currentUserUid
-  const isClient  = dossier.clientId  === currentUserUid
-  const priority  = PRIORITY_CONFIG[dossier.priority] ?? PRIORITY_CONFIG.normal
-
-  async function handleStatus(newStatus) {
-    setUpdating(true)
-    try {
-      await updateDoc(doc(db, 'dossiers', dossier.id), {
-        status: newStatus,
-        updatedAt: serverTimestamp(),
-        ...(note ? { expertNote: note } : {}),
-      })
-      onStatusChange(dossier.id, newStatus)
-      onClose()
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setUpdating(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-gray-100">
-          <div className="flex-1 min-w-0 pr-3">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <StatusPill status={dossier.status} />
-              <span className={clsx('text-[11px] font-semibold flex items-center gap-1', priority.color)}>
-                <span className={clsx('w-1.5 h-1.5 rounded-full', priority.dot)} />
-                {priority.label}
-              </span>
-              {dossier.confidential && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-navy-600 bg-navy-50 border border-navy-100 px-2 py-0.5 rounded-full">
-                  <Shield size={9} /> NDA
-                </span>
-              )}
-            </div>
-            <h2 className="font-display text-base font-bold text-navy-900 leading-tight">{dossier.title}</h2>
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">{dossier.ref}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 flex-shrink-0">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-5 space-y-4">
-          {/* Infos principales */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { Icon: FileText,   label: 'Type',      val: TYPE_LABELS[dossier.type] ?? dossier.type },
-              { Icon: MapPin,     label: 'Pays',       val: (dossier.countries ?? []).join(', ') || '—' },
-              { Icon: Calendar,   label: 'Échéance',   val: dossier.deadline || (dossier.deadlineFlexible ? 'Flexible' : '—') },
-              { Icon: DollarSign, label: 'Budget',     val: dossier.budgetType === 'open' ? 'Ouvert' : dossier.budget ? `${Number(dossier.budget).toLocaleString()} FCFA` : '—' },
-            ].map(({ Icon, label, val }) => (
-              <div key={label} className="bg-gray-50 rounded-xl p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1 mb-1">
-                  <Icon size={10} /> {label}
-                </p>
-                <p className="text-sm font-semibold text-navy-800">{val}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Parties */}
-          <div className="bg-gray-50 rounded-xl p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Parties</p>
-            <div className="flex justify-between text-sm">
-              <div>
-                <p className="text-[10px] text-gray-400">Client</p>
-                <p className="font-semibold text-navy-800">{dossier.clientName ?? '—'}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] text-gray-400">Expert</p>
-                <p className="font-semibold text-navy-800">{dossier.expertName ?? '—'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          {dossier.description && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Description</p>
-              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-3 max-h-32 overflow-y-auto">
-                {dossier.description}
-              </p>
-            </div>
-          )}
-
-          {/* Documents joints */}
-          {(dossier.documents ?? []).length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Documents</p>
-              <div className="flex flex-col gap-1.5">
-                {dossier.documents.map((doc_, i) => (
-                  <a key={i} href={doc_.url} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-gold-50 border border-gold-200 rounded-xl text-xs hover:bg-gold-100 transition-colors">
-                    <FileText size={13} className="text-gold-600 flex-shrink-0" />
-                    <span className="flex-1 font-medium text-navy-800 truncate">{doc_.name}</span>
-                    <span className="text-gray-400">{doc_.size}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Note expert si refus */}
-          {isExpert && dossier.status === 'pending' && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">
-                Note (optionnelle)
-              </p>
-              <textarea
-                rows={2}
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                placeholder="Motif de refus ou précisions pour le client…"
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none resize-none focus:border-gold-400 transition-all"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="p-5 pt-0 flex flex-col gap-2">
-
-          {/* Expert : dossier en attente → accepter / refuser */}
-          {isExpert && dossier.status === 'pending' && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleStatus('rejected')}
-                disabled={updating}
-                className="flex-1 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-              >
-                <X size={14} /> Refuser
-              </button>
-              <button
-                onClick={() => handleStatus('active')}
-                disabled={updating}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 text-navy-900"
-                style={{ background: 'linear-gradient(135deg, #C9A84C, #9E7828)' }}
-              >
-                {updating ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                Accepter
-              </button>
-            </div>
-          )}
-
-          {/* Expert : dossier actif → marquer terminé */}
-          {isExpert && dossier.status === 'active' && (
-            <button
-              onClick={() => handleStatus('completed')}
-              disabled={updating}
-              className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-            >
-              {updating ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-              Marquer comme terminé
-            </button>
-          )}
-
-          {/* Client : dossier en attente → annuler */}
-          {isClient && dossier.status === 'pending' && (
-            <button
-              onClick={() => handleStatus('cancelled')}
-              disabled={updating}
-              className="w-full py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-            >
-              {updating ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-              Annuler le dossier
-            </button>
-          )}
-
-          {/* Lien messagerie */}
-          <Link
-            href={`/contact/${isExpert ? dossier.clientId : dossier.expertId}`}
-            className="w-full py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-1.5"
-          >
-            <Send size={13} /> Envoyer un message
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ── Vue tous les dossiers ───────────────────────────────── */
-function AllDossiersView({ projects, currentUserUid, onBack, onOpenDossier }) {
-  const [filterStatus,   setFilterStatus]   = useState('all')
-  const [filterRole,     setFilterRole]     = useState('all')
-  const [search,         setSearch]         = useState('')
-  const [sortBy,         setSortBy]         = useState('date')
-
-  const filtered = projects
-    .filter(p => {
-      if (filterStatus !== 'all' && p.status !== filterStatus) return false
-      if (filterRole === 'client' && p.clientId !== currentUserUid) return false
-      if (filterRole === 'expert' && p.expertId !== currentUserUid) return false
-      if (search && !p.title.toLowerCase().includes(search.toLowerCase()) &&
-          !(p.clientName ?? '').toLowerCase().includes(search.toLowerCase()) &&
-          !(p.expertName ?? '').toLowerCase().includes(search.toLowerCase())) return false
-      return true
-    })
-    .sort((a, b) => {
-      if (sortBy === 'date')     return (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0)
-      if (sortBy === 'deadline') return (a.deadline ?? '').localeCompare(b.deadline ?? '')
-      if (sortBy === 'priority') {
-        const order = { urgent: 0, high: 1, normal: 2 }
-        return (order[a.priority] ?? 2) - (order[b.priority] ?? 2)
-      }
-      return 0
-    })
-
-  return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={onBack} className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 transition-colors">
-          <ChevronRight size={18} className="rotate-180" />
-        </button>
-        <div>
-          <h1 className="font-display text-xl font-bold text-navy-900">Tous mes dossiers</h1>
-          <p className="text-xs text-gray-400">{projects.length} dossier{projects.length > 1 ? 's' : ''} au total</p>
-        </div>
-      </div>
-
-      {/* Filtres */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-4 mb-5" style={{ boxShadow: 'var(--shadow-sm)' }}>
-        <div className="flex flex-wrap gap-3">
-          {/* Recherche */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
-            <input
-              className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-gold-400 transition-all"
-              placeholder="Rechercher un dossier…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Statut */}
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-gold-400 bg-white cursor-pointer"
-          >
-            <option value="all">Tous les statuts</option>
-            {Object.entries(STATUS_CONFIG).map(([v, { label }]) => (
-              <option key={v} value={v}>{label}</option>
-            ))}
-          </select>
-
-          {/* Rôle */}
-          <select
-            value={filterRole}
-            onChange={e => setFilterRole(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-gold-400 bg-white cursor-pointer"
-          >
-            <option value="all">Tous les rôles</option>
-            <option value="client">En tant que client</option>
-            <option value="expert">En tant qu'expert</option>
-          </select>
-
-          {/* Tri */}
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-gold-400 bg-white cursor-pointer"
-          >
-            <option value="date">Plus récents</option>
-            <option value="deadline">Échéance</option>
-            <option value="priority">Priorité</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Résultats */}
-      {filtered.length === 0 ? (
-        <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-12 text-center text-gray-400">
-          <FolderOpen size={36} className="mx-auto mb-3 opacity-30" />
-          <p className="font-semibold text-navy-700">Aucun dossier trouvé</p>
-          <p className="text-sm mt-1">Modifiez vos filtres ou créez un nouveau dossier</p>
-          <Link href="/search" className="btn-gold btn-sm mt-4 inline-flex">Trouver un expert</Link>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2.5">
-          {filtered.map(p => {
-            const priority = PRIORITY_CONFIG[p.priority] ?? PRIORITY_CONFIG.normal
-            const isExpert = p.expertId === currentUserUid
-            return (
-              <div
-                key={p.id}
-                onClick={() => onOpenDossier(p)}
-                className="bg-white border border-gray-100 rounded-2xl p-4 cursor-pointer hover:border-gold-300 hover:shadow-md transition-all group"
-                style={{ boxShadow: 'var(--shadow-sm)' }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <StatusPill status={p.status} />
-                      <span className={clsx('text-[11px] font-semibold flex items-center gap-1', priority.color)}>
-                        <span className={clsx('w-1.5 h-1.5 rounded-full', priority.dot)} />
-                        {priority.label}
-                      </span>
-                      <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                        {isExpert ? 'Expert' : 'Client'}
-                      </span>
-                      {p.confidential && (
-                        <span className="text-[11px] text-navy-600 bg-navy-50 border border-navy-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                          <Shield size={9} /> NDA
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm font-semibold text-navy-800 truncate">{p.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {isExpert ? `Client : ${p.clientName}` : `Expert : ${p.expertName}`}
-                      {p.deadline && ` · Éch. ${p.deadline}`}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    {p.budget && (
-                      <p className="text-sm font-bold text-navy-800">
-                        {Number(p.budget).toLocaleString()} <span className="text-xs font-normal text-gray-400">FCFA</span>
-                      </p>
-                    )}
-                    <span className="text-[11px] text-gray-300 font-mono">{p.ref}</span>
-                  </div>
-                </div>
-
-                {/* Barre de progression si actif */}
-                {p.status === 'active' && (
-                  <div className="mt-3">
-                    <ProgressBar value={p.progress ?? 0} />
-                    <p className="text-xs text-gray-400 mt-1">{p.progress ?? 0}% complété</p>
-                  </div>
-                )}
-
-                {/* Actions rapides expert */}
-                {isExpert && p.status === 'pending' && (
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-50" onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        await updateDoc(doc(db, 'dossiers', p.id), { status: 'rejected', updatedAt: serverTimestamp() })
-                      }}
-                      className="flex-1 py-1.5 rounded-xl border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-all flex items-center justify-center gap-1"
-                    >
-                      <X size={11} /> Refuser
-                    </button>
-                    <button
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        await updateDoc(doc(db, 'dossiers', p.id), { status: 'active', updatedAt: serverTimestamp() })
-                      }}
-                      className="flex-1 py-1.5 rounded-xl text-xs font-semibold text-navy-900 transition-all flex items-center justify-center gap-1"
-                      style={{ background: 'linear-gradient(135deg, #C9A84C, #9E7828)' }}
-                    >
-                      <Check size={11} /> Accepter
-                    </button>
-                    <button
-                      onClick={() => onOpenDossier(p)}
-                      className="px-3 py-1.5 rounded-xl border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition-all"
-                    >
-                      Détails
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ── Page principale ─────────────────────────────────────── */
-export default function DashboardPage() {
+function ExpertDashboard() {
   const router = useRouter()
-  const [activeKey,      setActiveKey]      = useState('dash')
-  const [view,           setView]           = useState('dashboard') // 'dashboard' | 'all-dossiers'
+  const [activeKey, setActiveKey] = useState('dash')
+  const [view, setView] = useState('dashboard')
   const [selectedDossier, setSelectedDossier] = useState(null)
-
   const { user, projects, notifications, kpis, loading, error } = useDashboardData()
 
-  const today = new Date().toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
 
   async function handleLogout() {
@@ -478,17 +533,16 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  // KPIs
-  const KPIS = kpis ? [
-    { Icon: FolderOpen, val: String(kpis.totalDossiers ?? projects.length), label: 'Dossiers total',    change: '+8 ce mois',       up: true },
-    { Icon: Banknote,   val: kpis.revenueMonth,                             label: 'FCFA ce mois',      change: kpis.revenueChange, up: true },
-    { Icon: Star,       val: String(kpis.avgRating),                        label: 'Note moyenne',      change: 'Stable',           up: true },
-    { Icon: Eye,        val: String(kpis.profileViews),                     label: 'Vues profil (30j)', change: kpis.viewsChange,   up: true },
-  ] : []
-
   const unreadCount    = notifications.filter(n => n.unread).length
   const pendingCount   = projects.filter(p => p.status === 'pending').length
   const activeProjects = projects.filter(p => ['active', 'pending'].includes(p.status)).slice(0, 3)
+
+  const KPIS = kpis ? [
+    { Icon: FolderOpen, val: String(kpis.totalDossiers ?? projects.length), label: 'Dossiers total',    change: '+8 ce mois', up: true },
+    { Icon: Banknote,   val: kpis.revenueMonth,                             label: 'XOF ce mois',      change: kpis.revenueChange, up: true },
+    { Icon: Star,       val: String(kpis.avgRating),                        label: 'Note moyenne',      change: 'Stable', up: true },
+    { Icon: Eye,        val: String(kpis.profileViews),                     label: 'Vues profil (30j)', change: kpis.viewsChange, up: true },
+  ] : []
 
   const SIDEBAR_ITEMS = [
     { Icon: Home,          label: 'Tableau de bord',  href: '/dashboard',                  key: 'dash' },
@@ -516,44 +570,25 @@ export default function DashboardPage() {
   return (
     <>
       <Navbar />
-
-      {/* Modal dossier */}
-      {selectedDossier && (
-        <DossierModal
-          dossier={selectedDossier}
-          currentUserUid={user?.uid}
-          onClose={() => setSelectedDossier(null)}
-          onStatusChange={(id, newStatus) => {
-            setSelectedDossier(null)
-          }}
-        />
-      )}
-
       <div className="min-h-screen bg-gray-50 pt-16 flex">
-
-        {/* ── Sidebar ──────────────────────────────────── */}
+        {/* Sidebar */}
         <aside className="hidden md:flex flex-col w-[240px] flex-shrink-0 bg-white border-r border-gray-100 fixed top-16 bottom-0 overflow-y-auto">
           <div className="p-4">
-            {loading ? (
-              <Skeleton className="h-[60px] w-full rounded-xl" />
-            ) : (
+            {loading ? <Skeleton className="h-[60px] w-full rounded-xl" /> : (
               <div className="flex items-center gap-2.5 p-3 bg-gold-50 border border-gold-200 rounded-xl">
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center font-display text-sm font-bold flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #1F3D67, #2D5990)', color: '#D9BC72', border: '2px solid #F2E4BF' }}
-                >
+                <div className="w-9 h-9 rounded-full flex items-center justify-center font-display text-sm font-bold flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #1F3D67, #2D5990)', color: '#D9BC72', border: '2px solid #F2E4BF' }}>
                   {user?.initials ?? '?'}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-navy-800 truncate">{user?.name ?? '—'}</p>
-                  <SubBadge plan={user?.plan ?? 'free'} />
+                  <SubBadge plan={user?.plan ?? 'starter'} />
                 </div>
               </div>
             )}
           </div>
-
           <nav className="px-3 pb-4">
-            <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2">Principal</p>
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 px-3 py-2">Principal</p>
             {SIDEBAR_ITEMS.slice(0, 4).map(({ Icon, label, href, key, badge }) => (
               <Link key={key} href={href}
                 onClick={(e) => {
@@ -567,12 +602,9 @@ export default function DashboardPage() {
                 )}>
                 <Icon size={16} className="flex-shrink-0" />
                 <span className="flex-1">{label}</span>
-                {badge ? (
-                  <span className="text-[10px] font-bold bg-gold-500 text-navy-900 px-1.5 py-0.5 rounded-full">{badge}</span>
-                ) : null}
+                {badge ? <span className="text-[10px] font-bold bg-gold-500 text-navy-900 px-1.5 py-0.5 rounded-full">{badge}</span> : null}
               </Link>
             ))}
-
             <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2 mt-2">Outils</p>
             {SIDEBAR_ITEMS.slice(4, 7).map(({ Icon, label, href, key }) => (
               <Link key={key} href={href}
@@ -581,8 +613,7 @@ export default function DashboardPage() {
                 {label}
               </Link>
             ))}
-
-            <p className="text-[10px] font-bold tracking-[0.1em] uppercase text-gray-300 px-3 py-2 mt-2">Compte</p>
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 px-3 py-2 mt-2">Compte</p>
             {SIDEBAR_ITEMS.slice(7).map(({ Icon, label, href, key }) => (
               <Link key={key} href={href}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 text-gray-500 hover:bg-gray-50 hover:text-navy-800 transition-all">
@@ -590,34 +621,17 @@ export default function DashboardPage() {
                 {label}
               </Link>
             ))}
-
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all w-full mt-1"
-            >
+            <button onClick={handleLogout}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all w-full mt-1">
               <LogOut size={16} className="flex-shrink-0" />
               Déconnexion
             </button>
           </nav>
         </aside>
 
-        {/* ── Main ─────────────────────────────────────── */}
         <main className="flex-1 md:ml-[240px] p-6 md:p-8">
-
-          {/* Vue : tous les dossiers */}
-          {view === 'all-dossiers' && (
-            <AllDossiersView
-              projects={projects}
-              currentUserUid={user?.uid}
-              onBack={() => { setView('dashboard'); setActiveKey('dash') }}
-              onOpenDossier={setSelectedDossier}
-            />
-          )}
-
-          {/* Vue : dashboard principal */}
           {view === 'dashboard' && (
             <>
-              {/* Greeting */}
               {loading ? (
                 <><Skeleton className="h-8 w-48 mb-2" /><Skeleton className="h-4 w-64 mb-6" /></>
               ) : (
@@ -636,88 +650,67 @@ export default function DashboardPage() {
                 </>
               )}
 
-              {/* KPIs */}
+              {/* KPIs expert */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {loading
                   ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[108px] rounded-2xl" />)
                   : KPIS.map(({ Icon, val, label, change, up }) => (
-                      <div key={label} className="bg-white border border-gray-100 rounded-2xl p-4" style={{ boxShadow: 'var(--shadow-sm)' }}>
-                        <Icon size={20} className="mb-2 text-gray-400" />
-                        <p className="font-display text-2xl font-bold text-navy-900">{val}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-                        <p className={clsx('text-xs font-semibold mt-1.5 flex items-center gap-0.5', up ? 'text-green-600' : 'text-red-500')}>
-                          {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {change}
-                        </p>
-                      </div>
-                    ))
+                    <div key={label} className="bg-white border border-gray-100 rounded-2xl p-4" style={{ boxShadow: 'var(--shadow-sm)' }}>
+                      <Icon size={20} className="mb-2 text-gray-400" />
+                      <p className="font-display text-2xl font-bold text-navy-900">{val}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+                      <p className={clsx('text-xs font-semibold mt-1.5 flex items-center gap-0.5', up ? 'text-green-600' : 'text-red-500')}>
+                        {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />} {change}
+                      </p>
+                    </div>
+                  ))
                 }
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
-
-                {/* Dossiers actifs */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-display text-base font-semibold text-navy-800">Dossiers actifs</h2>
-                    <button
-                      onClick={() => { setView('all-dossiers'); setActiveKey('dossiers') }}
-                      className="text-xs font-semibold text-gold-600 hover:text-gold-700 flex items-center gap-0.5"
-                    >
+                    <button onClick={() => { setView('all-dossiers'); setActiveKey('dossiers') }}
+                      className="text-xs font-semibold text-gold-600 hover:text-gold-700 flex items-center gap-0.5">
                       Voir tout ({projects.length}) <ChevronRight size={13} />
                     </button>
                   </div>
-
                   <div className="flex flex-col gap-3">
                     {loading
                       ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[100px] rounded-2xl" />)
                       : activeProjects.length === 0
-                        ? (
-                          <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-8 text-center text-sm text-gray-400">
-                            Aucun dossier actif pour le moment.
-                          </div>
-                        )
-                        : activeProjects.map(p => {
-                            const isExpert = p.expertId === user?.uid
-                            return (
-                              <div
-                                key={p.id}
-                                onClick={() => setSelectedDossier(p)}
-                                className="bg-white border border-gray-100 rounded-2xl p-4 cursor-pointer hover:border-gold-300 hover:shadow-md transition-all"
-                                style={{ boxShadow: 'var(--shadow-sm)' }}
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex-1 min-w-0 pr-2">
-                                    <p className="text-sm font-semibold text-navy-800 truncate">{p.title}</p>
-                                    <p className="text-xs text-gray-400 mt-0.5">
-                                      {isExpert ? `Client : ${p.clientName}` : `Expert : ${p.expertName}`}
-                                      {p.deadline && ` · Éch. ${p.deadline}`}
-                                    </p>
-                                  </div>
-                                  <StatusPill status={p.status} />
-                                </div>
-                                <ProgressBar value={p.progress ?? 0} />
-                                <div className="flex justify-between mt-1.5 text-xs text-gray-400">
-                                  <span>{p.progress ?? 0}% complété</span>
-                                  {isExpert && p.status === 'pending' && (
-                                    <span className="text-amber-600 font-semibold flex items-center gap-0.5">
-                                      <AlertTriangle size={10} /> Action requise
-                                    </span>
-                                  )}
-                                </div>
+                        ? <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-8 text-center text-sm text-gray-400">Aucun dossier actif.</div>
+                        : activeProjects.map(p => (
+                          <div key={p.id} onClick={() => setSelectedDossier(p)}
+                            className="bg-white border border-gray-100 rounded-2xl p-4 cursor-pointer hover:border-gold-300 hover:shadow-md transition-all"
+                            style={{ boxShadow: 'var(--shadow-sm)' }}>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1 min-w-0 pr-2">
+                                <p className="text-sm font-semibold text-navy-800 truncate">{p.title}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{p.client}{p.deadline && ` · Éch. ${p.deadline}`}</p>
                               </div>
-                            )
-                          })
+                              <StatusPill status={p.status} />
+                            </div>
+                            <ProgressBar value={p.progress ?? 0} />
+                            <div className="flex justify-between mt-1.5 text-xs text-gray-400">
+                              <span>{p.progress ?? 0}% complété</span>
+                            </div>
+                          </div>
+                        ))
                     }
-                    <Link href="/search" className="btn-outline btn-sm w-fit inline-flex items-center gap-1.5">
-                      + Nouveau dossier
-                    </Link>
+                    <Link href="/search" className="btn-outline btn-sm w-fit inline-flex items-center gap-1.5">+ Nouveau dossier</Link>
                   </div>
 
-                  {/* Quick actions */}
                   <div className="mt-6">
                     <h2 className="font-display text-base font-semibold text-navy-800 mb-4">Actions rapides</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {QUICK_ACTIONS.map(({ Icon, label, href }) => (
+                      {[
+                        { Icon: Search, label: 'Trouver un expert', href: '/search' },
+                        { Icon: MessageSquare, label: 'Messagerie', href: '/messages' },
+                        { Icon: Scale, label: 'OHADA IA', href: '/ohada-ia' },
+                        { Icon: BarChart2, label: 'Statistiques', href: '#' },
+                      ].map(({ Icon, label, href }) => (
                         <Link key={label} href={href}
                           className="bg-white border border-gray-100 rounded-xl p-4 text-center hover:border-gold-300 hover:shadow-sm transition-all cursor-pointer group"
                           style={{ boxShadow: 'var(--shadow-sm)' }}>
@@ -731,7 +724,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Notifications + Abonnement */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-display text-base font-semibold text-navy-800">Notifications</h2>
@@ -741,52 +733,43 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
-
                   <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
                     {loading
                       ? Array.from({ length: 4 }).map((_, i) => (
-                          <div key={i} className="flex gap-3 p-4 border-b border-gray-50 last:border-0">
-                            <Skeleton className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" />
-                            <div className="flex-1 space-y-1.5">
-                              <Skeleton className="h-3.5 w-full" />
-                              <Skeleton className="h-3 w-20" />
-                            </div>
-                          </div>
-                        ))
+                        <div key={i} className="flex gap-3 p-4 border-b border-gray-50 last:border-0">
+                          <Skeleton className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" />
+                          <div className="flex-1 space-y-1.5"><Skeleton className="h-3.5 w-full" /><Skeleton className="h-3 w-20" /></div>
+                        </div>
+                      ))
                       : notifications.length === 0
                         ? <div className="p-6 text-center text-sm text-gray-400">Aucune notification.</div>
-                        : notifications.slice(0, 6).map((n) => (
-                            <div key={n.id} className={clsx(
-                              'flex gap-3 p-4 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50 cursor-pointer',
-                              n.unread && 'bg-gold-50/50'
-                            )}>
-                              <div className={clsx('w-2 h-2 rounded-full flex-shrink-0 mt-1.5', DOT_COLORS[n.dot] ?? 'bg-gray-300')} />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-600 leading-snug">{n.text}</p>
-                                <p className="text-xs text-gray-300 mt-1">{n.time}</p>
-                              </div>
-                              {n.unread && <div className="w-1.5 h-1.5 rounded-full bg-gold-500 flex-shrink-0 mt-2" />}
+                        : notifications.slice(0, 6).map(n => (
+                          <div key={n.id} className={clsx('flex gap-3 p-4 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50 cursor-pointer', n.unread && 'bg-gold-50/50')}>
+                            <div className={clsx('w-2 h-2 rounded-full flex-shrink-0 mt-1.5', DOT_COLORS[n.dot] ?? 'bg-gray-300')} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-600 leading-snug">{n.text}</p>
+                              <p className="text-xs text-gray-400 mt-1">{n.time}</p>
                             </div>
-                          ))
+                            {n.unread && <div className="w-1.5 h-1.5 rounded-full bg-gold-500 flex-shrink-0 mt-2" />}
+                          </div>
+                        ))
                     }
                   </div>
 
-                  {/* Abonnement */}
                   <div className="mt-4 rounded-2xl p-4 border border-gold-500/20" style={{ background: 'linear-gradient(135deg, #152B47, #1F3D67)' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <SubBadge plan={user?.plan ?? 'free'} />
-                      <span className="text-xs text-white/40">Actif</span>
+                      <SubBadge plan={user?.plan ?? 'starter'} />
+                      <span className="text-xs text-white/70">Actif</span>
                     </div>
-                    <p className="text-xs text-white/50 mb-3">Renouvellement le 15 fév. 2025</p>
                     <div className="grid grid-cols-3 gap-2 mb-3">
                       {[
                         [String(kpis?.totalDossiers ?? projects.length), 'Missions'],
-                        [String(kpis?.avgRating ?? '—'),                 'Note'],
-                        ['98%',                                           'Succès'],
+                        [String(kpis?.avgRating ?? '—'), 'Note'],
+                        ['98%', 'Succès'],
                       ].map(([v, l]) => (
                         <div key={l} className="text-center bg-white/[0.06] rounded-lg py-2">
                           <p className="font-display text-sm font-bold text-gold-400">{v}</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">{l}</p>
+                          <p className="text-xs text-white/70 mt-0.5">{l}</p>
                         </div>
                       ))}
                     </div>
@@ -802,4 +785,38 @@ export default function DashboardPage() {
       </div>
     </>
   )
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROUTEUR — détecte accountType et affiche le bon dashboard
+══════════════════════════════════════════════════════════════ */
+export default function DashboardPage() {
+  const [accountType, setAccountType] = useState(null)
+  const [checked,     setChecked]     = useState(false)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) { setAccountType('expert'); setChecked(true); return }
+      try {
+        const snap = await getDoc(doc(db, 'users', u.uid))
+        const type = snap.exists() ? (snap.data().accountType ?? 'expert') : 'expert'
+        setAccountType(type)
+      } catch {
+        setAccountType('expert')
+      }
+      setChecked(true)
+    })
+    return unsub
+  }, [])
+
+  if (!checked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-gold-500" />
+      </div>
+    )
+  }
+
+  if (accountType === 'company') return <EnterpriseDashboard />
+  return <ExpertDashboard />
 }

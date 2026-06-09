@@ -108,7 +108,7 @@ function UserMenu({ user, profile, onLogout }) {
             <Avatar user={user} profile={profile} size={10} />
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-white truncate">{displayName}</p>
-              <p className="text-[11px] text-white/40 truncate">{user?.email}</p>
+              <p className="text-[11px] text-white/65 truncate">{user?.email}</p>
               {profile?.status && (
                 <div className="mt-1"><StatusBadge status={profile.status} /></div>
               )}
@@ -283,7 +283,7 @@ export default function Navbar() {
                   <p className="text-sm font-semibold text-white">
                     {authUser.displayName ?? profile?.firstName ?? authUser.email}
                   </p>
-                  <p className="text-xs text-white/40">{authUser.email}</p>
+                  <p className="text-xs text-white/65">{authUser.email}</p>
                   {profile?.status && <div className="mt-1"><StatusBadge status={profile.status} /></div>}
                 </div>
               </div>

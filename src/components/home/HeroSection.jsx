@@ -22,17 +22,17 @@ export default function HeroSection() {
           IA Juridique · Droit OHADA / UEMOA
         </div>
         <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.08] max-w-3xl mb-5">
-          L&apos;expertise juridique{' '}<span className="text-gold-500">OHADA accessible</span>{' '}à toutes les entreprises
+          La conformité juridique{' '}<span className="text-gold-500">OHADA pilotée</span>{' '}par l&apos;intelligence artificielle
         </h1>
-        <p className="text-lg text-white/60 leading-relaxed max-w-xl mb-10">
-          Trouvez l&apos;avocat, le comptable ou le consultant OHADA qu&apos;il vous faut. Négociez, collaborez et exécutez vos dossiers entièrement sur la plateforme.
+        <p className="text-lg text-white/70 leading-relaxed max-w-xl mb-10">
+          Plateforme SaaS B2B pour les entreprises de la zone UEMOA. Suivez vos obligations légales, gérez vos dossiers en workflow et accédez à des experts juridiques vérifiés — en un seul outil.
         </p>
         <div className="flex flex-wrap items-center gap-4 mb-10">
           <Link href="/auth/register" className="btn-gold-lg inline-flex items-center gap-2">
-            Démarrer gratuitement
+            Créer mon compte entreprise
           </Link>
           <Link href="/search" className="btn-outline-gold btn-lg inline-flex items-center gap-2">
-            Parcourir les experts
+            Voir les experts
             <ChevronDown size={16} />
           </Link>
         </div>
@@ -75,16 +75,16 @@ export default function HeroSection() {
         </div>
         <div className="flex flex-wrap gap-10">
           {[
-            { val: '2 400+', label: 'Experts certifiés' },
-            { val: '17', label: 'Pays OHADA couverts' },
-            { val: '98%', label: 'Satisfaction client' },
-            { val: '8 500+', label: 'Dossiers traités' },
+            { val: '500+',   label: 'Entreprises actives' },
+            { val: '17',     label: 'Pays OHADA couverts' },
+            { val: '98%',    label: 'Satisfaction client' },
+            { val: '2 400+', label: 'Experts disponibles' },
           ].map(({ val, label }, i) => (
             <div key={label} className="flex items-center gap-10">
               {i > 0 && <div className="w-px h-10 bg-white/10" />}
               <div>
                 <div className="font-display text-[28px] font-bold text-gold-400 leading-none">{val}</div>
-                <div className="text-[13px] text-white/40 mt-1">{label}</div>
+                <div className="text-[13px] text-white/60 mt-1">{label}</div>
               </div>
             </div>
           ))}

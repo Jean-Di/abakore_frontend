@@ -282,12 +282,12 @@
 //                     {form.budgetType !== 'open' && (
 //                       <div className="mb-5">
 //                         <label className="label">
-//                           {form.budgetType === 'fixed' ? 'Budget total (FCFA ou €)' : 'Taux horaire souhaité'}
+//                           {form.budgetType === 'fixed' ? 'Budget total (XOF)' : 'Taux horaire souhaité (XOF)'}
 //                         </label>
 //                         <div className="relative">
 //                           <input className="input pr-16" placeholder={form.budgetType === 'fixed' ? 'Ex: 500 000' : 'Ex: 15 000'}
 //                             value={form.budget} onChange={e => upd('budget', e.target.value)} />
-//                           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">FCFA</span>
+//                           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">XOF</span>
 //                         </div>
 //                         <p className="text-xs text-gray-400 mt-1.5">
 //                           Tarif habituel de {expert.name.split(' ')[0]} : <span className="font-semibold text-gold-600">{expert.rate}{expert.ratePeriod}</span>
@@ -1036,18 +1036,18 @@ export default function ProposePage({ params }) {
                     {form.budgetType !== 'open' && (
                       <div className="mb-5">
                         <label className="label">
-                          {form.budgetType === 'fixed' ? 'Budget total (FCFA ou €)' : 'Taux horaire souhaité'}
+                          {form.budgetType === 'fixed' ? 'Budget total (XOF)' : 'Taux horaire souhaité (XOF)'}
                         </label>
                         <div className="relative">
                           <input className="input pr-16" placeholder={form.budgetType === 'fixed' ? 'Ex: 500 000' : 'Ex: 15 000'}
                             value={form.budget} onChange={e => upd('budget', e.target.value)} />
-                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">FCFA</span>
+                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">XOF</span>
                         </div>
                         {expert?.hourlyRate && (
                           <p className="text-xs text-gray-400 mt-1.5">
                             Tarif habituel de {expertName.split(' ')[0]} :{' '}
                             <span className="font-semibold text-gold-600">
-                              {Number(expert.hourlyRate).toLocaleString()} FCFA / heure
+                              {Number(expert.hourlyRate).toLocaleString()} XOF / heure
                             </span>
                           </p>
                         )}
@@ -1130,7 +1130,7 @@ export default function ProposePage({ params }) {
                       ['Type',        DOSSIER_TYPES.find(d => d.value === dossierType)?.label ?? '—'],
                       ['Titre',       form.title || '(Non renseigné)'],
                       ['Pays',        form.countries.join(', ') || '—'],
-                      ['Budget',      form.budgetType === 'open' ? "Ouvert — laisser l'expert proposer" : form.budget ? `${form.budget} FCFA` : '(Non renseigné)'],
+                      ['Budget',      form.budgetType === 'open' ? "Ouvert — laisser l'expert proposer" : form.budget ? `${form.budget} XOF` : '(Non renseigné)'],
                       ['Délai',       form.deadline || (form.deadlineFlexible ? 'Flexible' : 'Non défini')],
                       ['Priorité',    { normal: 'Normale', high: 'Haute', urgent: 'Urgente' }[form.priority]],
                       ['Confidentiel',form.confidential ? 'Oui (NDA requis)' : 'Non'],
@@ -1199,7 +1199,7 @@ export default function ProposePage({ params }) {
                     { Icon: Clock,        label: 'Réponse',       val: expert?.responseTime ?? '24–48h' },
                     { Icon: CheckCircle2, label: 'Taux de succès', val: expert?.successRate ? `${expert.successRate}%` : '—' },
                     { Icon: MapPin,       label: 'Localisation',   val: expert?.country ?? '—' },
-                    { Icon: DollarSign,   label: 'Tarif',          val: expert?.hourlyRate ? `${Number(expert.hourlyRate).toLocaleString()} FCFA/h` : 'Sur demande' },
+                    { Icon: DollarSign,   label: 'Tarif',          val: expert?.hourlyRate ? `${Number(expert.hourlyRate).toLocaleString()} XOF/h` : 'Sur demande' },
                   ].map(({ Icon, label, val }) => (
                     <div key={label} className="flex justify-between text-xs py-2 border-b border-gray-50 last:border-0">
                       <span className="text-gray-400 flex items-center gap-1"><Icon size={11} /> {label}</span>

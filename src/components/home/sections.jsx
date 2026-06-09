@@ -164,14 +164,14 @@ export function HowItWorks() {
   const steps = [
     {
       n: '1',
-      title: 'Créez votre profil',
-      body: 'Inscrivez-vous, choisissez votre statut (avocat, comptable, entreprise…) et soumettez vos justificatifs pour obtenir le badge vérifié.',
+      title: 'Activez votre compte',
+      body: "Inscrivez-vous en 2 minutes, choisissez votre plan, invitez votre équipe et configurez votre tableau de bord de conformité juridique.",
       extra: (
         <div className="flex flex-wrap gap-1.5 mt-4">
           {[
-            { Icon: Scale,     label: 'Avocat' },
-            { Icon: BarChart2, label: 'Comptable' },
             { Icon: Building2, label: 'Entreprise' },
+            { Icon: Scale,     label: 'Expert' },
+            { Icon: BarChart2, label: 'Comptable' },
           ].map(({ Icon, label }) => (
             <span key={label} className="badge-navy inline-flex items-center gap-1 text-[11px]">
               <Icon size={11} /> {label}
@@ -182,22 +182,22 @@ export function HowItWorks() {
     },
     {
       n: '2',
-      title: 'Trouvez & contactez',
-      body: 'Recherchez parmi 2 400+ experts certifiés. Consultez profils, notes et tarifs. Lancez une conversation directement sur la plateforme.',
+      title: 'Pilotez votre conformité',
+      body: "Suivez vos indicateurs légaux, recevez des alertes d'échéance, gérez vos dossiers en circuit de validation interne et consultez l'IA OHADA.",
       extra: (
         <div className="mt-4 bg-gold-50 border border-gold-200 rounded-xl px-3 py-2 text-xs text-gold-700 flex items-center gap-1.5">
-          <MessageSquare size={12} /> Messagerie sécurisée + partage de documents intégré
+          <ShieldCheck size={12} /> Score de conformité pondéré en temps réel
         </div>
       ),
     },
     {
       n: '3',
-      title: 'Exécutez & payez',
-      body: "Soumettez votre dossier, suivez l'avancement en temps réel, validez les livrables et effectuez le paiement sécurisé — sans sortir d'Abakoré.",
+      title: 'Faites appel à des experts',
+      body: "Pour les sujets complexes, accédez à la Legal Marketplace : trouvez un expert vérifié, contractualisez et payez en toute sécurité via escrow.",
       extra: (
         <div className="flex gap-2 mt-4 flex-wrap">
-          <span className="badge-navy inline-flex items-center gap-1"><Lock size={11} /> Paiement sécurisé</span>
-          <span className="badge-verified inline-flex items-center gap-1"><ShieldCheck size={11} /> Fonds protégés</span>
+          <span className="badge-navy inline-flex items-center gap-1"><Lock size={11} /> Paiement escrow</span>
+          <span className="badge-verified inline-flex items-center gap-1"><ShieldCheck size={11} /> Experts vérifiés</span>
         </div>
       ),
     },
@@ -208,9 +208,9 @@ export function HowItWorks() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="sec-label">Comment ça marche</p>
-          <h2 className="sec-title">Simple, sécurisé, tout en un</h2>
+          <h2 className="sec-title">Simple, puissant, tout en un</h2>
           <p className="text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
-            De la recherche d'expert à l'exécution du dossier — sans quitter la plateforme.
+            De la mise en conformité au recours à un expert — sans quitter la plateforme.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
@@ -282,10 +282,10 @@ export function FeaturedExperts() {
 // ─── FeaturesSection ──────────────────────────────────────────────────────────
 export function FeaturesSection() {
   const features = [
-    { Icon: Bot,         title: 'Base OHADA intégrée & IA',        body: "Posez vos questions juridiques en langage naturel. L'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources." },
-    { Icon: Lock,        title: 'Paiement & escrow sécurisés',      body: 'Les fonds sont bloqués sur la plateforme et libérés uniquement à la validation des livrables. Zéro risque pour l\'acheteur et le vendeur.' },
-    { Icon: ShieldCheck, title: 'Vérification des profils',         body: 'Chaque expert est vérifié par notre équipe — carte du barreau, diplômes, Kbis. Badge visible sur tous les profils.' },
-    { Icon: BarChart2,   title: 'Suivi de dossiers en temps réel',  body: 'Tableau de bord complet pour suivre l\'avancement, les documents, les jalons et les échanges de chaque mission.' },
+    { Icon: Bot,         title: 'OHADA Intelligence IA',            body: "Posez vos questions juridiques en langage naturel. L'IA analyse les actes uniformes, règlements et jurisprudences OHADA pour vous répondre avec sources citées." },
+    { Icon: ShieldCheck, title: 'Conformité & alertes intelligentes', body: "Suivez en temps réel l'ensemble de vos obligations légales. Recevez des alertes avant chaque échéance critique — TVA, RCCM, comptes annuels, visites médicales." },
+    { Icon: BarChart2,   title: 'Workflow juridique interne',        body: "Créez des dossiers juridiques internes et faites-les valider via un circuit configurable — brouillon → soumis → révision → approuvé. Traçabilité complète." },
+    { Icon: Lock,        title: 'Legal Marketplace sécurisée',       body: "Pour les sujets complexes, accédez à 2 400+ experts vérifiés. Paiement par escrow sécurisé, libéré uniquement à la validation des livrables." },
   ]
 
   return (
@@ -314,22 +314,22 @@ export function FeaturesSection() {
           <div className="bg-navy-900 rounded-3xl p-7 border border-gold-500/15 shadow-lg relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/8 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10">
-              <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-gold-500/60 mb-5 flex items-center gap-1.5">
+              <p className="text-xs font-bold tracking-[0.1em] uppercase text-gold-400 mb-5 flex items-center gap-1.5">
                 <Sparkles size={12} /> OHADA Intelligence
               </p>
               <div className="bg-white/[0.06] border border-white/10 rounded-xl p-4 mb-3">
-                <p className="text-xs text-white/40 mb-2">Question IA</p>
+                <p className="text-xs text-white/65 mb-2">Question IA</p>
                 <p className="text-[13px] text-white/85 leading-relaxed">"Quelles sont les conditions de validité d'un contrat de bail commercial sous l'Acte Uniforme OHADA ?"</p>
               </div>
               <div className="bg-gold-500/8 border border-gold-500/20 rounded-xl p-4 mb-5">
                 <p className="text-xs text-gold-600 mb-2">Réponse Abakoré IA</p>
                 <p className="text-[13px] text-white/75 leading-relaxed">Selon l'AUDCG (Art. 69-103), le bail commercial requiert un écrit, la désignation précise des locaux, la durée minimale de 2 ans…</p>
-                <p className="text-[10px] text-gold-500/50 mt-2">Source : AUDCG, révisé 2010 · Art. 69–73</p>
+                <p className="text-xs text-gold-400 mt-2">Source : AUDCG, révisé 2010 · Art. 69–73</p>
               </div>
               <div className="grid grid-cols-3 gap-2.5">
                 {[['Acte cité', 'AUDCG 2010'], ['Articles', '69 – 103'], ['Confiance', '96%']].map(([k, v]) => (
                   <div key={k} className="bg-white/[0.05] border border-white/8 rounded-lg p-3">
-                    <p className="text-[10px] text-white/35 mb-1">{k}</p>
+                    <p className="text-xs text-white/60 mb-1">{k}</p>
                     <p className="text-[13px] font-semibold" style={{ color: k === 'Confiance' ? '#D9BC72' : 'rgba(255,255,255,0.75)' }}>{v}</p>
                   </div>
                 ))}
@@ -349,24 +349,29 @@ export function PricingSection() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="sec-label">Tarifs</p>
-          <h2 className="sec-title">Un plan pour chaque ambition</h2>
-          <p className="text-lg text-gray-400 max-w-md mx-auto">Commencez gratuitement, montez en puissance à votre rythme.</p>
+          <h2 className="sec-title">Un plan pour chaque entreprise</h2>
+          <p className="text-lg text-gray-400 max-w-md mx-auto">
+            Gérez votre environnement juridique dès 25 000 XOF/mois — sans juriste à temps plein.
+          </p>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {PRICING_PLANS.map((plan) => (
             <div
               key={plan.name}
               className={clsx(
                 'rounded-3xl p-6 relative transition-all duration-200 hover:-translate-y-0.5',
-                plan.featured  ? 'bg-navy-900 border-[1.5px] border-gold-600' :
-                plan.spotlight ? 'border border-purple-500/40'                :
-                                 'bg-white border border-gray-100',
+                plan.featured    ? 'bg-navy-900 border-[1.5px] border-gold-600' :
+                plan.ctaStyle === 'enterprise' ? 'border border-gray-200'       :
+                                   'bg-white border border-gray-100',
               )}
               style={{
-                boxShadow:  plan.featured  ? 'var(--shadow-gold), var(--shadow-md)' :
-                            plan.spotlight ? '0 4px 20px rgba(124,58,237,0.15)'     :
-                                             'var(--shadow-sm)',
-                background: plan.spotlight ? 'linear-gradient(160deg, #1E1B4B, #2D1F6E)' : undefined,
+                boxShadow:  plan.featured ? 'var(--shadow-gold), var(--shadow-md)' :
+                            plan.ctaStyle === 'enterprise' ? '0 4px 24px rgba(15,30,60,0.10)' :
+                                            'var(--shadow-sm)',
+                background: plan.ctaStyle === 'enterprise'
+                  ? 'linear-gradient(160deg, #0F1E3C, #152B47)'
+                  : undefined,
               }}
             >
               {plan.featured && (
@@ -374,49 +379,95 @@ export function PricingSection() {
                   <Star size={10} fill="currentColor" /> Populaire
                 </span>
               )}
-              <p className={clsx('text-[11px] font-bold tracking-widest uppercase mb-2.5',
-                plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-300/70' : 'text-gray-300')}>
+
+              {/* Nom + tagline */}
+              <p className={clsx('text-xs font-bold tracking-widest uppercase mb-1',
+                plan.featured ? 'text-gold-400' :
+                plan.ctaStyle === 'enterprise' ? 'text-gold-400' :
+                'text-gray-500')}>
                 {plan.name}
               </p>
-              <p className={clsx('font-display text-4xl font-bold leading-none',
-                plan.featured ? 'text-gold-400' : plan.spotlight ? 'text-purple-200' : 'text-navy-900')}>
-                {plan.price}
+              <p className={clsx('text-xs mb-3',
+                plan.featured ? 'text-white/70' :
+                plan.ctaStyle === 'enterprise' ? 'text-white/65' :
+                'text-gray-500')}>
+                {plan.tagline}
               </p>
-              <p className={clsx('text-xs mt-1 mb-5',
-                plan.featured ? 'text-white/40' : plan.spotlight ? 'text-purple-300/40' : 'text-gray-400')}>
+
+              {/* Prix */}
+              <div className="mb-1">
+                <span className={clsx('font-display text-3xl font-bold leading-none',
+                  plan.featured ? 'text-gold-400' :
+                  plan.ctaStyle === 'enterprise' ? 'text-gold-300' :
+                  'text-navy-900')}>
+                  {Number(plan.price).toLocaleString('fr-FR')}
+                </span>
+                <span className={clsx('text-sm font-semibold ml-1',
+                  plan.featured ? 'text-white/75' :
+                  plan.ctaStyle === 'enterprise' ? 'text-white/70' :
+                  'text-gray-500')}>
+                  XOF
+                </span>
+              </div>
+              <p className={clsx('text-xs mb-1',
+                plan.featured ? 'text-white/65' :
+                plan.ctaStyle === 'enterprise' ? 'text-white/60' :
+                'text-gray-400')}>
                 {plan.period}
               </p>
+
+              {/* Utilisateurs */}
+              <p className={clsx('text-xs font-semibold mb-5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full',
+                plan.featured ? 'bg-white/15 text-white/85' :
+                plan.ctaStyle === 'enterprise' ? 'bg-gold-500/15 text-gold-400' :
+                'bg-gray-100 text-gray-600')}>
+                {plan.users}
+              </p>
+
+              {/* Features */}
               <ul className="space-y-0.5 mb-6">
                 {plan.features.map(({ ok, text }) => (
                   <li key={text} className={clsx('flex items-start gap-2 py-1.5 text-[13px] border-b last:border-0',
-                    plan.featured  ? 'border-white/[0.07] text-white/70'       :
-                    plan.spotlight ? 'border-purple-500/15 text-purple-200/75' :
-                                     'border-gray-50 text-gray-500')}>
+                    plan.featured ? 'border-white/[0.09] text-white/85' :
+                    plan.ctaStyle === 'enterprise' ? 'border-white/[0.08] text-white/75' :
+                    'border-gray-50 text-gray-600')}>
                     {ok
-                      ? <Check size={13} strokeWidth={2.5} className={plan.spotlight ? 'text-purple-400 flex-shrink-0 mt-0.5' : 'text-gold-500 flex-shrink-0 mt-0.5'} />
+                      ? <Check size={13} strokeWidth={2.5} className="text-gold-500 flex-shrink-0 mt-0.5" />
                       : <Minus size={13} className="text-gray-300 flex-shrink-0 mt-0.5" />}
                     {text}
                   </li>
                 ))}
               </ul>
+
+              {/* CTA */}
               <Link
-                href="/auth/register"
+                href={plan.ctaStyle === 'enterprise' ? '/contact' : `/auth/register?plan=${plan.value}`}
                 className={clsx(
                   'flex justify-center items-center gap-1.5 w-full py-2.5 rounded-xl text-sm font-semibold transition-all',
-                  plan.ctaStyle === 'gold'      && 'btn-gold',
-                  plan.ctaStyle === 'navy'      && 'btn-navy',
-                  plan.ctaStyle === 'outline'   && 'btn-outline',
-                  plan.ctaStyle === 'spotlight' && 'text-white font-bold',
+                  plan.ctaStyle === 'gold'       && 'btn-gold',
+                  plan.ctaStyle === 'navy'       && 'btn-navy',
+                  plan.ctaStyle === 'outline'    && 'btn-outline',
+                  plan.ctaStyle === 'enterprise' && 'text-navy-900',
                 )}
-                style={plan.ctaStyle === 'spotlight' ? { background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' } : undefined}
+                style={plan.ctaStyle === 'enterprise'
+                  ? { background: 'linear-gradient(135deg, #C9A84C, #9E7828)' }
+                  : undefined}
               >
-                {plan.ctaStyle === 'gold'      && <Sparkles size={13} />}
-                {plan.ctaStyle === 'spotlight' && <Star size={13} />}
+                {plan.ctaStyle === 'gold' && <Sparkles size={13} />}
                 {plan.cta}
               </Link>
             </div>
           ))}
         </div>
+
+        {/* Paiements acceptés */}
+        <p className="text-center text-xs text-gray-400 mt-8">
+          Paiement via{' '}
+          <span className="font-semibold text-gray-500">Wave</span> ·{' '}
+          <span className="font-semibold text-gray-500">Orange Money</span> ·{' '}
+          <span className="font-semibold text-gray-500">MTN Mobile Money</span> ·{' '}
+          <span className="font-semibold text-gray-500">Carte bancaire</span>
+        </p>
       </div>
     </section>
   )
@@ -432,17 +483,17 @@ export function CtaSection() {
           <div className="relative z-10">
             <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-gold-400 mb-3">Rejoignez Abakoré</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white max-w-xl mx-auto leading-tight mb-4">
-              Votre expertise mérite d'être{' '}
-              <span className="text-gold-400">vue et reconnue</span>
+              Votre conformité juridique,{' '}
+              <span className="text-gold-400">sous contrôle dès aujourd'hui</span>
             </h2>
-            <p className="text-[15px] text-white/50 max-w-md mx-auto leading-relaxed mb-8">
-              PME à la recherche d'expertise ou professionnel cherchant à développer sa clientèle — Abakoré vous connecte.
+            <p className="text-[15px] text-white/70 max-w-md mx-auto leading-relaxed mb-8">
+              Entreprise qui cherche à piloter ses obligations légales ou expert qui développe sa clientèle — Abakoré est fait pour vous.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/auth/register" className="btn-gold-lg inline-flex items-center gap-2">
-                <Sparkles size={16} /> Créer mon profil gratuitement
+              <Link href="/auth/register?type=company" className="btn-gold-lg inline-flex items-center gap-2">
+                <Sparkles size={16} /> Démarrer en tant qu'entreprise
               </Link>
-              <Link href="/search" className="btn-outline-gold btn-lg">Parcourir les experts</Link>
+              <Link href="/auth/register?type=expert" className="btn-outline-gold btn-lg">Rejoindre en tant qu'expert</Link>
             </div>
           </div>
         </div>

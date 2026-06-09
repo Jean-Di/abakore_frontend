@@ -103,7 +103,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-        <p className="relative z-10 text-[11px] text-white/20">© 2025 Abakoré · Droit OHADA / UEMOA</p>
+        <p className="relative z-10 text-xs text-white/55">© 2026 Abakoré · Droit OHADA / UEMOA</p>
       </div>
 
       {/* Right panel */}

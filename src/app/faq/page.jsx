@@ -23,8 +23,9 @@ const FAQS = [
   {
     category: 'Abonnements & facturation',
     items: [
-      { q: 'Quelle est la différence entre les plans ?', a: 'Le plan Starter est gratuit avec des fonctionnalités de base. Premium offre une visibilité accrue et des outils avancés. Spotlight place votre profil en tête de recherche. Enterprise est sur-mesure pour les grands cabinets.' },
-      { q: 'Comment annuler mon abonnement ?', a: 'Vous pouvez annuler à tout moment depuis la section "Abonnement" de votre tableau de bord. L\'accès reste actif jusqu\'à la fin de la période en cours.' },
+      { q: 'Quels sont les plans disponibles pour les entreprises ?', a: 'Abakoré propose 4 plans pour les entreprises : Starter (25 000 XOF/mois, 1 utilisateur), Growth (49 000 XOF/mois, 3 utilisateurs), Business (149 000 XOF/mois, 10 utilisateurs — le plus populaire) et Enterprise (450 000 XOF/mois, utilisateurs illimités). Tous les plans incluent l\'IA OHADA, la veille juridique et les alertes d\'échéances.' },
+      { q: 'Les experts juridiques doivent-ils souscrire à un plan ?', a: 'Non. Les experts juridiques s\'inscrivent gratuitement sur la Legal Marketplace d\'Abakoré pour proposer leurs services. Leur profil est vérifié par notre équipe avant activation (24 à 72h ouvrées).' },
+      { q: 'Comment annuler mon abonnement ?', a: 'Vous pouvez annuler à tout moment depuis la section "Abonnement" de votre tableau de bord. L\'accès reste actif jusqu\'à la fin de la période en cours, sans frais supplémentaires.' },
     ],
   },
 ]

@@ -548,7 +548,7 @@ export default function ProfilePage({ params }) {
                 {isOwner ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <EditableField label="Taux horaire (FCFA)" value={profile.hourlyRate} type="number" onSave={v => updateField('hourlyRate', v)} />
+                      <EditableField label="Taux horaire (XOF)" value={profile.hourlyRate} type="number" onSave={v => updateField('hourlyRate', v)} />
                     </div>
                     <div>
                       <EditableField label="Forfait consultation" value={profile.consultFee} type="number" onSave={v => updateField('consultFee', v)} />
@@ -557,7 +557,7 @@ export default function ProfilePage({ params }) {
                 ) : (
                   <p className="text-sm text-gray-500">
                     {profile.hourlyRate
-                      ? <>Taux horaire : <strong className="text-navy-800">{Number(profile.hourlyRate).toLocaleString()} FCFA</strong></>
+                      ? <>Taux horaire : <strong className="text-navy-800">{Number(profile.hourlyRate).toLocaleString()} XOF</strong></>
                       : 'Tarifs disponibles sur demande.'}
                   </p>
                 )}

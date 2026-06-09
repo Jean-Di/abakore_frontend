@@ -14,7 +14,7 @@ const LINKS = {
   Experts: [
     { label: 'Devenir expert', href: '/auth/register' },
     { label: 'Vérification profil', href: '/verification' },
-    { label: 'Plans Spotlight', href: '/#pricing' },
+    { label: 'Plans tarifaires', href: '/#pricing' },
     { label: 'Ressources OHADA', href: '/ressources' },
     { label: 'Communauté', href: '/communaute' },
   ],
@@ -49,7 +49,7 @@ export default function Footer() {
           />
           <span className="font-display text-lg font-bold text-gold-500">Abakoré</span>
         </Link>
-            <p className="text-sm text-white/40 leading-relaxed max-w-[240px]">
+            <p className="text-sm text-white/65 leading-relaxed max-w-[240px]">
               La plateforme de référence pour l'expertise juridique, comptable et RH dans l'espace OHADA.
             </p>
             <div className="flex gap-2 mt-5">
@@ -68,10 +68,10 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(LINKS).map(([section, links]) => (
             <div key={section}>
-              <h5 className="text-[11px] font-bold tracking-[0.1em] uppercase text-white/30 mb-4">{section}</h5>
+              <h5 className="text-xs font-bold tracking-[0.1em] uppercase text-white/65 mb-4">{section}</h5>
               <div className="flex flex-col gap-1">
                 {links.map(({ label, href }) => (
-                  <Link key={href} href={href} className="text-[13px] text-white/50 py-1 hover:text-gold-400 transition-colors">
+                  <Link key={href} href={href} className="text-[13px] text-white/70 py-1 hover:text-gold-400 transition-colors">
                     {label}
                   </Link>
                 ))}
@@ -81,8 +81,8 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/[0.07] pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <span className="text-xs text-white/25">© 2025 Abakoré. Tous droits réservés.</span>
-          <span className="text-xs text-white/25">Droit OHADA · 17 pays · 240M d'habitants</span>
+          <span className="text-xs text-white/55">© 2026 Abakoré. Tous droits réservés.</span>
+          <span className="text-xs text-white/55">Droit OHADA · 17 pays · 240M d'habitants</span>
         </div>
       </div>
     </footer>
